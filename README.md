@@ -44,8 +44,7 @@ mvn
    mvn clean install
 4. Run the application:
     ```bash
-   java -jar target/chatnojutsu-0.0.1-SNAPSHOT.jar
-
+   java -jar target/ChatnoJutsu-0.0.1-SNAPSHOT.jar
 The server will start at http://localhost:8080.
 
 ### Running the Tests
