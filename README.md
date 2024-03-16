@@ -22,10 +22,10 @@ ChatNoJutsu is a chat server built with Spring Boot, utilizing WebSockets for re
 
 ## Getting Started
 
-These instructions will help you get a copy of ChatNoJutsu running on your local machine for development and testing purposes.
+These instructions will help you get a copy of ChatNoJutsu running on your local machine.
 
 ### Prerequisites
-mvn
+
 - Java JDK 21
 - Maven
 - H2 Database (for development and testing purposes, can be run in-memory)
