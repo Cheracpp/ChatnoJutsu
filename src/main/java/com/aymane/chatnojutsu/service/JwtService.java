@@ -5,10 +5,11 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.SignatureException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
@@ -19,10 +20,12 @@ public class JwtService {
 
     SecretKey key = Jwts.SIG.HS512.key().build();
 
+    @Value("${jwt.cookieExpiry}")
+    private int cookieExpiry;
 
     public String createToken(String username) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + 3600000);
+        Date expiryDate = new Date(now.getTime() + cookieExpiry * 1000L);
 
         return Jwts.builder()
                 .subject(username)
@@ -32,12 +35,15 @@ public class JwtService {
                 .compact();
     }
 
-
     public String resolveToken(HttpServletRequest request) {
-
-        String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                }
+            }
+            return token;
         }
         return null;
     }
