@@ -10,11 +10,13 @@ import com.aymane.chatnojutsu.model.User;
 import com.aymane.chatnojutsu.repository.UserRepository;
 import com.aymane.chatnojutsu.utils.ErrorMessages;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -32,14 +34,12 @@ public class UserService {
             throw new IllegalArgumentException(ErrorMessages.USER_DATA_NULL);
         }
 
-        // Check for existing users before validating the password.
         if (userRepository.existsByUsername(userDTO.username())) {
             throw new UsernameAlreadyTakenException(String.format(ErrorMessages.USER_ALREADY_TAKEN, userDTO.username()));
         } else if (userRepository.existsByEmail(userDTO.email())) {
             throw new EmailAlreadyExistsException(String.format(ErrorMessages.EMAIL_ALREADY_EXISTS, userDTO.email()));
         }
 
-        // Enhanced password validation.
         validatePassword(userDTO.password());
 
         User user = UserMapper.toUser(userDTO);
@@ -49,6 +49,24 @@ public class UserService {
         return user;
     }
 
+    public User addFriend(String userName, String friendName){
+        Optional<User> user = userRepository.findByUsername(userName);
+        Optional<User> friend = userRepository.findByUsername(friendName);
+        if(user.isPresent() && friend.isPresent()) {
+            user.get().addFriend(friend.get());
+            userRepository.save(user.get());
+        }
+        return user.orElseThrow(() -> new UsernameNotFoundException("User or friend not found with usernames: " + userName + ", " + friendName));
+    }
+    public User removeFriend(String userName, String friendName){
+        Optional<User> user = userRepository.findByUsername(userName);
+        Optional<User> friend = userRepository.findByUsername(friendName);
+        if(user.isPresent() && friend.isPresent()) {
+            user.get().removeFriend(friend.get());
+            userRepository.save(user.get());
+        }
+        return user.orElseThrow(() -> new UsernameNotFoundException("User or friend not found with usernames: " + userName + ", " + friendName));
+    }
 
     public List<String> getAllUsers() {
         List<User> ListOfUser = userRepository.findAll();

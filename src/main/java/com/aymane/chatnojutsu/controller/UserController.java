@@ -1,5 +1,6 @@
 package com.aymane.chatnojutsu.controller;
 
+import com.aymane.chatnojutsu.mapper.UserMapper;
 import com.aymane.chatnojutsu.model.User;
 import com.aymane.chatnojutsu.dto.UserDTO;
 import com.aymane.chatnojutsu.service.UserService;
@@ -38,13 +39,19 @@ public class UserController {
         List<String> listOfUsers = userService.getAllUsers();
         return ResponseEntity.ok(listOfUsers);
     }
+    @PostMapping("/{userName}/friends/{friendName}")
+    public ResponseEntity<?> addFriend(@PathVariable String userName, @PathVariable String friendName){
+        UserDTO userDTO = UserMapper.toUserDTO(userService.addFriend(userName,friendName));
+        return ResponseEntity.ok(userDTO.username() + " is friend with " + friendName);
+    }
+    @DeleteMapping ("/{userName}/friends/{friendName}")
+    public ResponseEntity<?> removeFriend(@PathVariable String userName, @PathVariable String friendName) {
+        UserDTO userDTO = UserMapper.toUserDTO(userService.removeFriend(userName, friendName));
+        return ResponseEntity.ok(userDTO.username() + " is no longer friends with " + friendName);
+    }
 
     @GetMapping("/test")
     public ResponseEntity<?> test() {
         return ResponseEntity.ok(" you have access now  ");
     }
-
-
-
-
 }
