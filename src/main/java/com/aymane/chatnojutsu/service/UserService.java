@@ -69,14 +69,22 @@ public class UserService {
     }
 
     public List<String> getAllUsers() {
-        List<User> ListOfUser = userRepository.findAll();
-        List<String> ListOfUserUsernames = new ArrayList<>();
-        for(User user : ListOfUser){
-            ListOfUserUsernames.add(user.getUsername());
+        List<User> listOfUser = userRepository.findAll();
+        List<String> listOfUserUsernames = new ArrayList<>();
+        for(User user : listOfUser){
+            listOfUserUsernames.add(user.getUsername());
         }
-        return ListOfUserUsernames;
+        return listOfUserUsernames;
     }
 
+    public List<String> getUsers(String query) {
+        List<User> listOfUsers = userRepository.findUsersByUsernameContaining(query);
+        List<String> listOfUserUsernames = new ArrayList<>();
+        for(User user : listOfUsers){
+            listOfUserUsernames.add(user.getUsername());
+        }
+        return listOfUserUsernames;
+    }
 
     // helpers
     private void validatePassword(String password) {
@@ -86,7 +94,5 @@ public class UserService {
         if (password.length() < 8 || password.length() > 20) {
             throw new PasswordFormatException(ErrorMessages.PASSWORD_WRONG_SIZE);
         }
-        // Add more complex password validation rules here if necessary.
     }
-
 }

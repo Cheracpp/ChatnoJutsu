@@ -39,6 +39,11 @@ public class UserController {
         List<String> listOfUsers = userService.getAllUsers();
         return ResponseEntity.ok(listOfUsers);
     }
+    @GetMapping("/searchUsers")
+    public ResponseEntity<?> getUsers(@RequestParam String query){
+        List<String> listOfUsers = userService.getUsers(query);
+        return ResponseEntity.ok(listOfUsers);
+    }
     @PostMapping("/{userName}/friends/{friendName}")
     public ResponseEntity<?> addFriend(@PathVariable String userName, @PathVariable String friendName){
         UserDTO userDTO = UserMapper.toUserDTO(userService.addFriend(userName,friendName));
