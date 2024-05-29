@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org" >
+<head>
+    <title>Login Page</title>
+    <link href="/css/login.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="/javascript/login.js"></script>
+
+</head>
+<body>
+<div class="container">
+    <div class="background">
+        <form id="myForm">
+            <h3>Login Here</h3>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" placeholder="Username" id = "username" name="username" value="">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" placeholder="Password" id ="password" name="password" value="">
+            </div>
+            <div class="form-group">
+                <button type="submit">Log In</button>
+            </div>
+        </form>
+        <div class="character">
+            <img src="/images/naruto.png" alt="Naruto" class="naruto">
+        </div>
+        <div class="character">
+            <img src="/images/sasuke.png" alt="Sasuke" class="sasuke">
+        </div>
+    </div>
+</div>
+</body>
+</html>

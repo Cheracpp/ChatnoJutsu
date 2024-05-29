@@ -1,0 +1,108 @@
+/* Import the font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+body {
+    background-image: url("/images/konoha.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Poppins', sans-serif; /* Set default font */
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height */
+    width: 100%;
+}
+
+.background {
+    position: relative;
+    width: 400px;
+    height: 360px; /* Increased height for better balance */
+    background-color: rgba(0, 0, 0, 0.60); /* Adjust opacity */
+    border-radius: 10px;
+    padding: 30px; /* Increase padding for better spacing */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px; /* Increased space below labels */
+    font-size: 1rem;
+    color: #ffffff; /* White text for contrast */
+    font-weight: 600; /* Bold font for labels */
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 1px solid #333; /* Dark border */
+    box-sizing: border-box;
+    background-color: rgba(255, 255, 255, 0.2); /* Slightly lighter input background */
+    color: #ffffff; /* Ensure text is white for contrast */
+    transition: background-color 0.2s ease, border-color 0.2s ease; /* Smooth transition */
+}
+
+input::placeholder {
+    color: rgba(255, 255, 255, 0.7); /* Lighter placeholder color */
+}
+
+input:hover, input:focus {
+    background-color: rgba(255, 255, 255, 0.3); /* Lighter background on hover/focus */
+    border-color: #00aaff; /* Bright blue border on focus */
+    outline: none;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    background-color: rgba(255, 255, 255, 0.6); /* Increase opacity for better contrast */
+    color: #000000; /* Black text for contrast */
+    border: 1px solid #ffffff; /* White border */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: transform 0.2s ease-in-out, background-color 0.2s ease; /* Smooth transition */
+    font-weight: 600; /* Slightly bolder text for emphasis */
+}
+
+button:hover {
+    background-color: rgba(255, 255, 255, 0.7); /* Slightly lighter on hover */
+    transform: scale(1.05); /* Slightly enlarge the button on hover */
+}
+
+.character img {
+    position: absolute;
+    bottom: 0;
+    max-height: 20%;
+}
+
+.sasuke {
+    right: 10%;
+}
+
+.naruto {
+    right: 0;
+}
+
+h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* Subtle text shadow */
+    color: #e0e0e0; /* Slightly lighter text color */
+    font-weight: 600; /* Bold text for the header */
+}
