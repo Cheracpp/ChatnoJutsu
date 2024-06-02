@@ -19,6 +19,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import static jakarta.servlet.DispatcherType.ERROR;
+import static jakarta.servlet.DispatcherType.FORWARD;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -59,6 +62,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers(HttpMethod.POST,"/users","/auth/login").permitAll()
+                                .dispatcherTypeMatchers(FORWARD,ERROR).permitAll()
+                                .requestMatchers("/login").permitAll()
+                                .requestMatchers("/resources/**").permitAll()
+                                .requestMatchers("/static/**").permitAll()
+                                .requestMatchers("/templates/*").permitAll()
+                                .requestMatchers("/css/*").permitAll()
+                                .requestMatchers("/images/*").permitAll()
+                                .requestMatchers("/javascript/*").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
