@@ -12,13 +12,10 @@ public class LoginController {
     public String loginUser(){
         return "login";
     }
+
     @GetMapping("/register")
     public String registerNewUser(){
         return "register";
-    }
-    @GetMapping("/home")
-    public String getHomepage(){
-        return "index";
     }
 
 }

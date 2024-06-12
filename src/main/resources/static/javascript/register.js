@@ -1,3 +1,4 @@
+
 $(document).ready(function () {
     $("#myForm").on("submit", function (event) {
         event.preventDefault();
@@ -8,18 +9,15 @@ $(document).ready(function () {
 
         $.ajax({
             type: "POST",
-            url: "http://localhost:8080/auth/login",
+            url: "http://localhost:8080/users",
             contentType: "application/json",
             data: JSON.stringify(formData),
             success: function (response, status, xhr) {
-                const username = document.getElementById('username').value;
-                localStorage.setItem('username', username);
-                var jwt = xhr.getResponseHeader('Set-Cookie');
-                console.log("user logged in, jwt: ", jwt);
-                window.location.href = "http://localhost:8080/home";
+                console.log("user registered");
+                window.location.href = "http://localhost:8080/login";
             },
             error: function (xhr, status, error) {
-                console.error("Request failed: ", status, error);
+                console.error("failed to register a user", status, error);
             }
         });
     });

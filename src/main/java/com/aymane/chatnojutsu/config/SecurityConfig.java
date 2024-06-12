@@ -64,6 +64,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST,"/users","/auth/login").permitAll()
                                 .dispatcherTypeMatchers(FORWARD,ERROR).permitAll()
                                 .requestMatchers("/login").permitAll()
+                                .requestMatchers("/register").permitAll()
                                 .requestMatchers("/resources/**").permitAll()
                                 .requestMatchers("/static/**").permitAll()
                                 .requestMatchers("/templates/*").permitAll()
