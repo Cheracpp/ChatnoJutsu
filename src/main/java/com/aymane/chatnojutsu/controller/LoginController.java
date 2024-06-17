@@ -18,5 +18,9 @@ public class LoginController {
         return "register";
     }
 
+    @GetMapping("/home")
+    public String getHomepage(){
+        return "index";
+    }
 }
 
