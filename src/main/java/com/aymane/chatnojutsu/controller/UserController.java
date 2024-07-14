@@ -3,6 +3,7 @@ package com.aymane.chatnojutsu.controller;
 import com.aymane.chatnojutsu.mapper.UserMapper;
 import com.aymane.chatnojutsu.model.User;
 import com.aymane.chatnojutsu.dto.UserDTO;
+import com.aymane.chatnojutsu.service.RoomService;
 import com.aymane.chatnojutsu.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +19,14 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final RoomService roomService;
+
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, RoomService roomService) {
         this.userService = userService;
+        this.roomService = roomService;
     }
+
 
     @PostMapping
     public ResponseEntity<?> createNewUser(@Valid @RequestBody UserDTO userDTO) {
@@ -53,6 +58,11 @@ public class UserController {
     public ResponseEntity<?> removeFriend(@PathVariable String userName, @PathVariable String friendName) {
         UserDTO userDTO = UserMapper.toUserDTO(userService.removeFriend(userName, friendName));
         return ResponseEntity.ok(userDTO.username() + " is no longer friends with " + friendName);
+    }
+    @GetMapping("/{username}/chats")
+    public ResponseEntity<List<String>> getUserChats(@PathVariable String username){
+        List<String> chatsByUsername = roomService.getChatsByUsername(username);
+        return ResponseEntity.ok(chatsByUsername);
     }
 
     @GetMapping("/test")
