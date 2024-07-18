@@ -27,9 +27,8 @@ public class UserController {
         this.roomService = roomService;
     }
 
-
     @PostMapping
-    public ResponseEntity<?> createNewUser(@Valid @RequestBody UserDTO userDTO) {
+    public ResponseEntity<URI> createNewUser(@Valid @RequestBody UserDTO userDTO) {
         User createdUser = userService.registerNewUser(userDTO);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -40,22 +39,22 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllUsers(){
+    public ResponseEntity<List<String>> getAllUsers(){
         List<String> listOfUsers = userService.getAllUsers();
         return ResponseEntity.ok(listOfUsers);
     }
     @GetMapping("/searchUsers")
-    public ResponseEntity<?> getUsers(@RequestParam String query){
+    public ResponseEntity<List<String>> getUsers(@RequestParam String query){
         List<String> listOfUsers = userService.getUsers(query);
         return ResponseEntity.ok(listOfUsers);
     }
     @PostMapping("/{userName}/friends/{friendName}")
-    public ResponseEntity<?> addFriend(@PathVariable String userName, @PathVariable String friendName){
+    public ResponseEntity<String> addFriend(@PathVariable String userName, @PathVariable String friendName){
         UserDTO userDTO = UserMapper.toUserDTO(userService.addFriend(userName,friendName));
         return ResponseEntity.ok(userDTO.username() + " is friend with " + friendName);
     }
     @DeleteMapping ("/{userName}/friends/{friendName}")
-    public ResponseEntity<?> removeFriend(@PathVariable String userName, @PathVariable String friendName) {
+    public ResponseEntity<String> removeFriend(@PathVariable String userName, @PathVariable String friendName) {
         UserDTO userDTO = UserMapper.toUserDTO(userService.removeFriend(userName, friendName));
         return ResponseEntity.ok(userDTO.username() + " is no longer friends with " + friendName);
     }
@@ -63,10 +62,5 @@ public class UserController {
     public ResponseEntity<List<String>> getUserChats(@PathVariable String username){
         List<String> chatsByUsername = roomService.getChatsByUsername(username);
         return ResponseEntity.ok(chatsByUsername);
-    }
-
-    @GetMapping("/test")
-    public ResponseEntity<?> test() {
-        return ResponseEntity.ok(" you have access now  ");
     }
 }
