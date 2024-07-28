@@ -1,55 +1,74 @@
 # ChatNoJutsu
 
-ChatNoJutsu is a chat server built with Spring Boot, utilizing WebSockets for real-time communication. As a learning project, it aims to illustrate best practices in building and testing REST APIs and real-time services using Spring Boot.
+ChatNoJutsu is a personal learning project for exploring Spring Boot, WebSocket communication, and full-stack web development.
 
 ## Features
 
-### Current Features
+### Implemented Features
 
 - **User Management**
-    - Register a new user (`POST /users`)
-    - Retrieve a list of users (`GET /users`)
+    - User registration with unique username and email
+    - Retrieve list of users
+    - Friend management (add/remove friends)
 
 - **Authentication**
-    - Authenticate a user and return a token (`POST /auth/login`)
+    - JWT-based user authentication
+    - Secure login and logout mechanisms
+
+- **Messaging**
+    - Real-time WebSocket communication
+    - Message sending and receiving
+    - Message history retrieval
+
+### Technologies
+
+- **Backend**: Spring Boot
+- **Database**:
+    - PostgreSQL (user information)
+    - MongoDB (messages and rooms)
+- **Authentication**: JWT
+- **Real-time Communication**: WebSocket
 
 ### Upcoming Features
 
-- [ ] WebSocket communication for real-time chat functionality.
-- [ ] Group chat creation and management.
-- [ ] Message persistence and retrieval (chat history).
-- [ ] User profile management (update user details, profile picture, etc.).
+- [ ] Comprehensive test coverage
+- [ ] Enhanced error handling
+- [ ] Improved user profile management
 
 ## Getting Started
 
-These instructions will help you get a copy of ChatNoJutsu running on your local machine.
-
 ### Prerequisites
 
-- Java JDK 21
+- Java JDK 17
 - Maven
-- H2 Database (for development and testing purposes, can be run in-memory)
+- PostgreSQL database
+- MongoDB
+- IDE with Spring Boot support (recommended)
 
-
-### Installing
+### Installation
 
 1. Clone the repository:
    ```bash
    git clone https://github.com/Cheracpp/ChatNoJutsu.git
-2. Navigate to the project directory:
-    ```bash
-   cd ChatNoJutsu
-3. Build the project using Maven:
-    ```bash
+   ```
+
+2. Configure Databases
+    - Set up PostgreSQL and MongoDB
+    - Update `application.properties` with your database connections
+
+3. Build the project:
+   ```bash
    mvn clean install
+   ```
+
 4. Run the application:
-    ```bash
-   java -jar target/ChatnoJutsu-0.0.1-SNAPSHOT.jar
-The server will start at http://localhost:8080.
+   ```bash
+   mvn spring-boot:run
+   ```
 
-### Running the Tests
+### Running Tests
 
-Execute the unit tests with:
-
+Execute tests with:
 ```bash
-    mvn test
+mvn test
+```
