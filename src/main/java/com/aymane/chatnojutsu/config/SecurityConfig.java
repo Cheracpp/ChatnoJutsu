@@ -56,7 +56,7 @@ public class SecurityConfig {
         JwtFilter jwtFilter = new JwtFilter(jwtService, userDetailsService);
         httpSecurity
                 .headers(headers ->
-                        headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+                        headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::deny))
                 .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizeRequests ->
