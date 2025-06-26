@@ -103,4 +103,22 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$[1]").value("user2"))
                 .andExpect(jsonPath("$[2]").value("user3"));
     }
+
+
+    @Test
+    void getUsers_ShouldReturnListOfUsers() throws Exception {
+        // Given
+        String query = "john";
+        List<String> mockUsers = List.of("john_doe", "john_smith");
+        given(userService.getUsers(query)).willReturn(mockUsers);
+
+        mockMvc.perform(get("/users/searchUsers")
+                        .param("query", query))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[\"john_doe\", \"john_smith\"]")); // Expect JSON response
+
+        // Verify service interaction
+        verify(userService).getUsers(query);
+    }
 }
+
