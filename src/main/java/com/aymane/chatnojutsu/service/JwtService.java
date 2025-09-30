@@ -20,7 +20,8 @@ public class JwtService {
 
     SecretKey key = Jwts.SIG.HS512.key().build();
 
-    @Value("${jwt.cookieExpiry}")
+    // 30 minutes
+    @Value("${jwt.cookie.expiry-seconds:1800}")
     private int cookieExpiry;
 
     public String createToken(String username) {
