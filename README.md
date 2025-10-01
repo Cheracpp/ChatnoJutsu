@@ -13,6 +13,7 @@ ChatNoJutsu is a personal learning project for exploring Spring Boot, WebSocket 
 
 - **Authentication**
     - JWT-based user authentication
+    - csrf protection using the double submit cookie pattern
     - Secure login and logout mechanisms
 
 - **Messaging**
