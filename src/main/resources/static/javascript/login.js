@@ -14,8 +14,6 @@ $(document).ready(function () {
             success: function (response, status, xhr) {
                 const username = document.getElementById('username').value;
                 localStorage.setItem('username', username);
-                let jwt = xhr.getResponseHeader('Set-Cookie');
-                console.log("user logged in, jwt: ", jwt);
                 window.location.href = "/home";
             },
             error: function (xhr, status, error) {

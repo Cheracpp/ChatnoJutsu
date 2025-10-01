@@ -2,6 +2,7 @@ package com.aymane.chatnojutsu.controller;
 
 import com.aymane.chatnojutsu.dto.LoginRequest;
 import com.aymane.chatnojutsu.service.JwtService;
+import com.aymane.chatnojutsu.service.CsrfService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,7 @@ public class AuthenticationController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final CsrfService csrfService;
 
     // 30 minutes
     @Value("${jwt.cookie.expiry-seconds:1800}")
@@ -31,9 +33,12 @@ public class AuthenticationController {
     private int cookieExpired;
 
     @Autowired
-    public AuthenticationController(AuthenticationManager authenticationManager, JwtService jwtService) {
+    public AuthenticationController(AuthenticationManager authenticationManager,
+                                  JwtService jwtService,
+                                  CsrfService csrfService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.csrfService = csrfService;
     }
 
     @PostMapping("/login")
@@ -45,15 +50,20 @@ public class AuthenticationController {
         SecurityContextHolder.getContext().setAuthentication(authenticationResponse);
 
         String jwt = this.jwtService.createToken(loginRequest.username());
-
-        ResponseCookie cookie = ResponseCookie.from("accessToken", jwt)
+        ResponseCookie jwtCookie = ResponseCookie.from("accessToken", jwt)
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
+                .sameSite("Lax")
                 .path("/")
                 .maxAge(cookieExpiry)
                 .build();
+
+        String csrfToken = this.csrfService.generateCsrfToken();
+        ResponseCookie csrfCookie = csrfService.createCsrfCookie(csrfToken);
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, csrfCookie.toString())
                 .build();
     }
 
@@ -61,15 +71,21 @@ public class AuthenticationController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> unauthenticateUser(){
-        // cookie creation
-        ResponseCookie cookie = ResponseCookie.from("accessToken", "")
+        // Create expired JWT cookie
+        ResponseCookie jwtCookie = ResponseCookie.from("accessToken", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
+                .sameSite("Lax")
                 .path("/")
                 .maxAge(cookieExpired)
                 .build();
+
+        // Create expired CSRF cookie
+        ResponseCookie csrfCookie = csrfService.createExpiredCsrfCookie();
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, csrfCookie.toString())
                 .build();
     }
 }

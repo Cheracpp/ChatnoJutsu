@@ -1,6 +1,7 @@
 package com.aymane.chatnojutsu.config;
 
 import com.aymane.chatnojutsu.service.JwtService;
+import com.aymane.chatnojutsu.service.CsrfService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,14 +29,17 @@ import static jakarta.servlet.DispatcherType.FORWARD;
 public class SecurityConfig {
 
   private final JwtService jwtService;
+  private final CsrfService csrfService;
   private final UserDetailsService userDetailsService;
   private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
   @Autowired
   public SecurityConfig(JwtService jwtService,
+      CsrfService csrfService,
       UserDetailsService userDetailsService,
       JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
     this.jwtService = jwtService;
+    this.csrfService = csrfService;
     this.userDetailsService = userDetailsService;
     this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
   }
@@ -59,11 +63,13 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
     JwtFilter jwtFilter = new JwtFilter(jwtService, userDetailsService);
+    CsrfFilter csrfFilter = new CsrfFilter(csrfService);
+
     httpSecurity
         .headers(headers ->
             headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::deny))
         .cors(AbstractHttpConfigurer::disable)
-        .csrf(AbstractHttpConfigurer::disable)
+        .csrf(AbstractHttpConfigurer::disable)  // Using custom CSRF filter
         .formLogin(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(authorizeRequests ->
             authorizeRequests
@@ -85,7 +91,8 @@ public class SecurityConfig {
         .exceptionHandling(
             ex -> ex.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
         )
-        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+        .addFilterAfter(csrfFilter, JwtFilter.class);
 
     return httpSecurity.build();
   }

@@ -16,6 +16,30 @@ const searchArea = document.querySelector('.search-area')
 let selectedUserId = null;
 let stompClient = null;
 
+// Utility function to get CSRF token from cookie
+function getCSRFToken() {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'XSRF-TOKEN') {
+            return decodeURIComponent(value);
+        }
+    }
+    return null;
+}
+
+// Utility function to create headers with CSRF token
+function createAuthHeaders() {
+    const csrfToken = getCSRFToken();
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+    if (csrfToken) {
+        headers['X-XSRF-TOKEN'] = csrfToken;
+    }
+    return headers;
+}
+
 const socket = new SockJS('/ws');
 stompClient = Stomp.over(socket);
 
@@ -32,7 +56,10 @@ function onConnected() {
 
 async function fetchAndDisplayUsers() {
     console.log("DisplayUsers");
-    const usersResponse = await fetch(`/users/${username}/chats`);
+    const usersResponse = await fetch(`/users/${username}/chats`, {
+        method: 'GET',
+        headers: createAuthHeaders()
+    });
     let users = await usersResponse.json();
 
     users = users.filter(aUsername => aUsername !== username);
@@ -161,7 +188,10 @@ function displayMessage(messageFrom, content) {
 }
 
 async function fetchAndDisplayUserChat() {
-    const userChatResponse = await fetch(`/messages/${username}/${selectedUserId}`);
+    const userChatResponse = await fetch(`/messages/${username}/${selectedUserId}`, {
+        method: 'GET',
+        headers: createAuthHeaders()
+    });
     const userChat = await userChatResponse.json();
     chatMessagesSpace.innerHTML = '';
     userChat.forEach(Message => {
@@ -231,7 +261,10 @@ async function getUsers(){
 
     if (searchContent) {
         try {
-            const usersResponse = await fetch(`/users/searchUsers?query=${searchContent}`);
+            const usersResponse = await fetch(`/users/searchUsers?query=${searchContent}`, {
+                method: 'GET',
+                headers: createAuthHeaders()
+            });
 
             if (!usersResponse.ok) {
                 throw new Error(`Error: ${usersResponse.status}`);
@@ -272,11 +305,14 @@ async function getUsers(){
 
 
 function onLogout() {
-    fetch("/auth/logout", {method: "POST"})
+    fetch("/auth/logout", {
+        method: "POST",
+        headers: createAuthHeaders()
+    })
         .then(response => {
             if (response.ok) {
                 console.log("Logout successful");
-                window.location.href = "http://localhost:8080/login";
+                window.location.href = "/login";
             } else {
                 console.log("Logout failed: " + response.status);
             }
