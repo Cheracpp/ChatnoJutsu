@@ -37,7 +37,7 @@ public class MessageController {
         String roomId = roomService.getRoomId(new RoomDTO(messageDTO.messageFrom(), messageDTO.messageTo()));
         Message message = messageService.save(messageDTO, roomId);
         messagingTemplate.convertAndSendToUser(
-                message.getMessageTo(), "/queue/messages",
+                message.getMessageTo(), "/queue/private",
                 new ChatNotification(
                         message.getMessageId(),
                         message.getMessageFrom(),

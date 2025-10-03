@@ -47,7 +47,7 @@ stompClient.connect({}, onConnected, onError);
 
 function onConnected() {
     console.log("onConnected");
-    stompClient.subscribe(`/user/${username}/queue/messages`, onMessageReceived, (error) => {
+    stompClient.subscribe(`/user/queue/private`, onMessageReceived, (error) => {
         console.error("Error during subscription", error);
     });
     document.querySelector('#connected-user-fullname').textContent = username;
