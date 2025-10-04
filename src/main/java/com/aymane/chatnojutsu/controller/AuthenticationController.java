@@ -1,6 +1,7 @@
 package com.aymane.chatnojutsu.controller;
 
 import com.aymane.chatnojutsu.dto.LoginRequest;
+import com.aymane.chatnojutsu.model.User;
 import com.aymane.chatnojutsu.service.JwtService;
 import com.aymane.chatnojutsu.service.CsrfService;
 import jakarta.validation.Valid;
@@ -49,7 +50,10 @@ public class AuthenticationController {
                 this.authenticationManager.authenticate(authenticationRequest);
         SecurityContextHolder.getContext().setAuthentication(authenticationResponse);
 
-        String jwt = this.jwtService.createToken(loginRequest.username());
+        Object principal = authenticationResponse.getPrincipal();
+        User user = (User) principal;
+
+        String jwt = this.jwtService.createToken(user.getId());
         ResponseCookie jwtCookie = ResponseCookie.from("accessToken", jwt)
                 .httpOnly(true)
                 .secure(true)

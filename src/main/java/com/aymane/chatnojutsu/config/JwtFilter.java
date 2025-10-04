@@ -1,6 +1,7 @@
 package com.aymane.chatnojutsu.config;
 
 import com.aymane.chatnojutsu.service.JwtService;
+import com.aymane.chatnojutsu.service.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,7 +10,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -20,7 +20,7 @@ import java.io.IOException;
 public class JwtFilter extends OncePerRequestFilter {
 
     private JwtService jwtService;
-    private UserDetailsService userDetailsService;
+    private UserDetailsServiceImpl userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -28,7 +28,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (token != null && jwtService.validateToken(token)) {
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(jwtService.getUsername(token));
+            UserDetails userDetails = userDetailsService.loadUserById(jwtService.getUsername(token));
 
             // giving access.
             UsernamePasswordAuthenticationToken authentication

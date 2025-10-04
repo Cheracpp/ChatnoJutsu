@@ -24,4 +24,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
     }
+
+    public UserDetails loadUserById(String Id) throws UsernameNotFoundException {
+        Long userId = Long.parseLong(Id);
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + Id));
+    }
 }

@@ -2,6 +2,7 @@ package com.aymane.chatnojutsu.config;
 
 import com.aymane.chatnojutsu.service.JwtService;
 import com.aymane.chatnojutsu.service.CsrfService;
+import com.aymane.chatnojutsu.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,13 +31,13 @@ public class SecurityConfig {
 
   private final JwtService jwtService;
   private final CsrfService csrfService;
-  private final UserDetailsService userDetailsService;
+  private final UserDetailsServiceImpl userDetailsService;
   private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
   @Autowired
   public SecurityConfig(JwtService jwtService,
       CsrfService csrfService,
-      UserDetailsService userDetailsService,
+      UserDetailsServiceImpl userDetailsService,
       JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
     this.jwtService = jwtService;
     this.csrfService = csrfService;
