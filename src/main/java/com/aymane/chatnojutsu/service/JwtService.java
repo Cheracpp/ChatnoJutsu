@@ -36,7 +36,7 @@ public class JwtService {
                 .compact();
     }
 
-    public String resolveToken(HttpServletRequest request) {
+    public String resolveTokenFromCookie(HttpServletRequest request) {
         String token = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
@@ -73,7 +73,7 @@ public class JwtService {
     }
 
     // Extract the username from the JWT token
-    public String getUsername(String token) {
+    public String getSubject(String token) {
 
         return Jwts.parser()
                 .verifyWith(key)

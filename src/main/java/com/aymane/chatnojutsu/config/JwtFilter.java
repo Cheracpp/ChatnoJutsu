@@ -24,11 +24,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String token = jwtService.resolveToken(request);
+        String token = jwtService.resolveTokenFromCookie(request);
 
         if (token != null && jwtService.validateToken(token)) {
 
-            UserDetails userDetails = userDetailsService.loadUserById(jwtService.getUsername(token));
+            UserDetails userDetails = userDetailsService.loadUserById(jwtService.getSubject(token));
 
             // giving access.
             UsernamePasswordAuthenticationToken authentication
