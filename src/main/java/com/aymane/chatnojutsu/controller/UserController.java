@@ -63,4 +63,9 @@ public class UserController {
         List<String> chatsByUsername = roomService.getChatsByUsername(username);
         return ResponseEntity.ok(chatsByUsername);
     }
+  @PostMapping("/details")
+  public ResponseEntity<Map<String, UserDTO>> getUsersDetails(@RequestBody List<String> userIds) {
+    Map<String, UserDTO> usersDetails = userService.getUsersByIds(userIds);
+    return ResponseEntity.ok(usersDetails);
+  }
 }

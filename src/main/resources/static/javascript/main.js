@@ -14,9 +14,12 @@ const logout = document.querySelector('#logout');
 const search = document.querySelector('#people')
 const chatArea = document.querySelector('.chat-area')
 const searchArea = document.querySelector('.search-area')
+const roomsList = document.getElementById('connectedUsers');
 
-let selectedUserId = null;
+let selectedRoomId = null;
 let stompClient = null;
+let roomsDetails = null;
+let usersDetails = null;
 
 // Utility function to get CSRF token from cookie
 function getCSRFToken() {
@@ -56,122 +59,109 @@ function onConnected() {
 }
 
 async function fetchAndDisplayUsers() {
-    console.log("DisplayUsers");
-    const usersResponse = await fetch(`/users/${username}/chats`, {
-        method: 'GET',
-        headers: createAuthHeaders()
-    });
-    let users = await usersResponse.json();
+  const roomsResponse = await fetch(`/rooms`, {
+    method: 'GET',
+    headers: createAuthHeaders()
+  });
+  if (!roomsResponse.ok) {
+    throw new Error(
+        `error while fetching users, http status code: ${roomsResponse.status}`);
+  }
 
-    users = users.filter(aUsername => aUsername !== username);
+  const rooms = await roomsResponse.json();
+  roomsDetails = rooms.reduce((acc, room) => {
+    acc[room.roomId] = room;
+    return acc;
+  }, {});
 
-    const usersList = document.getElementById('connectedUsers');
-    usersList.innerHTML = '';
+  // assuming only direct rooms exist
+  let users = [...new Set(rooms.flatMap((room) => room.participants)
+  .filter(participantId => participantId !== currentUser.id))];
+  if (!users) {
+    users = [];
+  }
 
-    users.forEach((aUsername, index) => {
-        appendUserElement(aUsername, usersList);
+  // fetch for users' details
+  const usersDetailsResponse = await fetch("users/details", {
+    method: 'POST',
+    headers: createAuthHeaders(),
+    body: JSON.stringify(users)
+  })
 
-        if (index < users.length - 1) {
-            const separator = document.createElement('li');
-            separator.classList.add('separator');
-            usersList.appendChild(separator);
-        }
-    });
+  if (!usersDetailsResponse.ok) {
+    throw new Error("error fetching users details, http status code: "
+        + usersDetailsResponse.status);
+  }
+  usersDetails = await usersDetailsResponse.json();
+
+  roomsList.innerHTML = '';
+  rooms.forEach((room, index) => {
+    appendRoomElement(room);
+
+    if (index < users.length - 1) {
+      const separator = document.createElement('li');
+      separator.classList.add('separator');
+      roomsList.appendChild(separator);
+    }
+  });
 }
 
-function appendUserElement(aUsername, usersList) {
-    const listItem = document.createElement('li');
-    listItem.classList.add('user-item');
-    listItem.id = aUsername;
+function appendRoomElement(room) {
+  const participants = room.participants;
+  const receiverId = participants.find(id => id !== currentUser.id);
+  const receiver = receiverId ? usersDetails[receiverId].username
+      : 'Unknown User';
 
-    const userImage = document.createElement('img');
+  const listItem = document.createElement('li');
+  const usernameSpan = document.createElement('span');
+  const userImage = document.createElement('img');
+
+  listItem.classList.add('room-item');
+  listItem.id = room.roomId;
+
+  if (room.type === 'direct') {
     userImage.src = '../images/user_icon.png';
-    userImage.alt = aUsername;
-
-    const usernameSpan = document.createElement('span');
-    usernameSpan.textContent = aUsername;
-
-    const receivedMsgs = document.createElement('span');
-    receivedMsgs.textContent = '0';
-    receivedMsgs.classList.add('nbr-msg', 'hidden');
-
-    listItem.appendChild(userImage);
-    listItem.appendChild(usernameSpan);
-    listItem.appendChild(receivedMsgs);
-    if(usersList.id === 'connectedUsers' ) {
-        listItem.addEventListener('click', userItemClick);
-    }else{
-        listItem.addEventListener('click', searchItemClick);
+    userImage.alt = receiver;
+    usernameSpan.textContent = receiver;
+  } else {
+    const numberOfParticipants = participants.length;
+    userImage.src = '../images/group_icon.png';
+    if (room.name === null) {
+      room.name = '';
     }
+    userImage.alt = room.name + "group image";
+    usernameSpan.textContent = receiver + ` and ${numberOfParticipants
+    - 2} others`;
+  }
 
-    usersList.appendChild(listItem);
+  const receivedMsgs = document.createElement('span');
+  receivedMsgs.textContent = '0';
+  receivedMsgs.classList.add('nbr-msg', 'hidden');
+
+  listItem.appendChild(userImage);
+  listItem.appendChild(usernameSpan);
+  listItem.appendChild(receivedMsgs);
+  listItem.addEventListener('click', roomItemClick);
+
+  roomsList.appendChild(listItem);
 }
-function searchItemClick(event){
-    let found = false;
-    const usersList = document.getElementById('connectedUsers');
-    const clickedUser = event.currentTarget;
-    selectedUserId = clickedUser.getAttribute('id');
-    let activeUser;
-    if (usersList) {
-        for (let listItem of usersList.children) {
-            if(listItem.id === selectedUserId){
-                activeUser = listItem;
-                found = true;
-            }
-            console.log(listItem.id);
-        }
-    }
-    if(found === false){
-        activeUser = document.createElement('li');
 
-        activeUser.classList.add('user-item');
-        activeUser.id = selectedUserId;
+function roomItemClick(event) {
+  document.querySelectorAll('.room-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  messageForm.classList.remove('hidden');
+  chatArea.classList.remove("hidden");
+  searchArea.classList.add("hidden");
+  const clickedRoom = event.currentTarget;
+  clickedRoom.classList.add('active');
 
-        const userImage = document.createElement('img');
-        userImage.src = '../images/user_icon.png';
-        userImage.alt = selectedUserId;
+  selectedRoomId = clickedRoom.getAttribute('id');
+  fetchAndDisplayUserChat().then();
 
-        const usernameSpan = document.createElement('span');
-        usernameSpan.textContent = selectedUserId;
-
-        const receivedMsgs = document.createElement('span');
-        receivedMsgs.textContent = '0';
-        receivedMsgs.classList.add('nbr-msg', 'hidden');
-
-        activeUser.appendChild(userImage);
-        activeUser.appendChild(usernameSpan);
-        activeUser.appendChild(receivedMsgs);
-        usersList.insertBefore(activeUser,usersList.firstChild)
-    }
-
-    messageForm.classList.remove('hidden');
-    chatArea.classList.remove("hidden");
-    searchArea.classList.add("hidden");
-    activeUser.classList.add('active');
-    fetchAndDisplayUserChat().then();
-    const nbrMsg = clickedUser.querySelector('.nbr-msg');
-    nbrMsg.classList.add('hidden');
-    nbrMsg.textContent = '0';
-    activeUser.addEventListener('click', userItemClick);
-
-}
-function userItemClick(event) {
-    document.querySelectorAll('.user-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    messageForm.classList.remove('hidden');
-    chatArea.classList.remove("hidden");
-    searchArea.classList.add("hidden");
-    const clickedUser = event.currentTarget;
-    clickedUser.classList.add('active');
-
-    selectedUserId = clickedUser.getAttribute('id');
-    console.log("the clicked User is: " + selectedUserId)
-    fetchAndDisplayUserChat().then();
-
-    const nbrMsg = clickedUser.querySelector('.nbr-msg');
-    nbrMsg.classList.add('hidden');
-    nbrMsg.textContent = '0';
+  const nbrMsg = clickedRoom.querySelector('.nbr-msg');
+  nbrMsg.classList.add('hidden');
+  nbrMsg.textContent = '0';
 }
 
 function displayMessage(senderId, content) {
@@ -189,138 +179,225 @@ function displayMessage(senderId, content) {
 }
 
 async function fetchAndDisplayUserChat() {
-    const userChatResponse = await fetch(`/messages/${username}/${selectedUserId}`, {
-        method: 'GET',
-        headers: createAuthHeaders()
-    });
-    const userChat = await userChatResponse.json();
-    chatMessagesSpace.innerHTML = '';
-    userChat.forEach(Message => {
-        displayMessage(Message.messageFrom, Message.content)
-    });
-    chatMessagesSpace.scrollTop = chatMessagesSpace.scrollHeight;
+  const userChatResponse = await fetch(`/messages/${selectedRoomId}`, {
+    method: 'GET',
+    headers: createAuthHeaders()
+  });
+  const userChat = await userChatResponse.json();
+  chatMessagesSpace.innerHTML = '';
+  userChat.forEach(message => {
+    displayMessage(message.senderId, message.content)
+  });
+  chatMessagesSpace.scrollTop = chatMessagesSpace.scrollHeight;
 }
 
-
 function onError() {
-    connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh this page to try again!';
-    connectingElement.style.color = 'red';
+  connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh this page to try again!';
+  connectingElement.style.color = 'red';
 }
 
 function sendMessage(event) {
-    const messageContent = messageInput.value.trim();
-    if (messageContent && stompClient) {
-        const Message = {
-            messageFrom: username,
-            messageTo: selectedUserId,
-            content: messageContent,
-            createdAt: new Date()
-        };
-        stompClient.send("/app/chat", {}, JSON.stringify(Message));
-        displayMessage(username, messageContent);
-        messageInput.value = '';
-    }
-    chatMessagesSpace.scrollTop = chatMessagesSpace.scrollHeight;
-    event.preventDefault();
+  const messageContent = messageInput.value.trim();
+  if (messageContent && stompClient) {
+    const Message = {
+      roomId: selectedRoomId,
+      participants: roomsDetails[selectedRoomId].participants,
+      senderId: currentUser.id,
+      content: messageContent,
+    };
+    stompClient.send("/app/chat", {}, JSON.stringify(Message));
+    displayMessage(currentUser.id, messageContent);
+    messageInput.value = '';
+  }
+  chatMessagesSpace.scrollTop = chatMessagesSpace.scrollHeight;
+  event.preventDefault();
 }
 
 async function onMessageReceived(payload) {
-    await fetchAndDisplayUsers();
-    console.log('Message received', payload);
-    const message = JSON.parse(payload.body);
-    if (selectedUserId && selectedUserId === message.messageFrom) {
-        displayMessage(message.messageFrom, message.content);
-        chatMessagesSpace.scrollTop = chatMessagesSpace.scrollHeight;
-    }
+  await fetchAndDisplayUsers();
+  const message = JSON.parse(payload.body);
+  // if the room is already open
+  if (selectedRoomId && selectedRoomId === message.roomId) {
+    displayMessage(message.senderId, message.content);
+    chatMessagesSpace.scrollTop = chatMessagesSpace.scrollHeight;
+  }
 
-    if (selectedUserId) {
-        document.querySelector(`#${selectedUserId}`).classList.add('active');
-    } else {
-        messageForm.classList.add('hidden');
-    }
+  if (selectedRoomId) {
+    document.getElementById(`${selectedRoomId}`).classList.add('active');
+  } else {
+    messageForm.classList.add('hidden');
+  }
 
-    const notifiedUser = document.querySelector(`#${message.messageFrom}`);
-    if (notifiedUser && !notifiedUser.classList.contains('active')) {
-        const nbrMsg = notifiedUser.querySelector('.nbr-msg');
-        nbrMsg.classList.remove('hidden');
-        nbrMsg.textContent = '';
-    }
+  const notifiedUser = document.getElementById(`${message.roomId}`);
+  if (notifiedUser && !notifiedUser.classList.contains('active')) {
+    const nbrMsg = notifiedUser.querySelector('.nbr-msg');
+    nbrMsg.classList.remove('hidden');
+    nbrMsg.textContent = '';
+  }
 }
 
 function onSearch() {
-    document.querySelectorAll('.user-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    chatArea.classList.add("hidden");
-    searchArea.classList.remove("hidden");
+  document.querySelectorAll('.room-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  chatArea.classList.add("hidden");
+  searchArea.classList.remove("hidden");
 
 }
-async function getUsers(){
-    const searchContent = searchInput.value.trim();
-    const usersList = document.getElementById('results');
-    usersList.innerHTML = ''; // Clear previous results
 
-    if (searchContent) {
-        try {
-            const usersResponse = await fetch(`/users/searchUsers?query=${searchContent}`, {
-                method: 'GET',
-                headers: createAuthHeaders()
-            });
+async function getUsers() {
+  const searchContent = searchInput.value.trim();
+  const usersList = document.getElementById('results');
+  usersList.innerHTML = ''; // Clear previous results
 
-            if (!usersResponse.ok) {
-                throw new Error(`Error: ${usersResponse.status}`);
-            }
+  if (searchContent) {
+    try {
+      const usersResponse = await fetch(
+          `/users/search?query=${searchContent}`, {
+            method: 'GET',
+            headers: createAuthHeaders()
+          });
 
-            let users = await usersResponse.json();
+      if (!usersResponse.ok) {
+        throw new Error(`Error: ${usersResponse.status}`);
+      }
+
+      let users = await usersResponse.json();
 
       users = users.filter(user => (user.id !== currentUser.id));
 
-            if (users.length === 0) {
-                const noResults = document.createElement('li');
-                noResults.innerText = 'No users found';
-                usersList.appendChild(noResults);
-                return;
-            }
+      if (users.length === 0) {
+        const noResults = document.createElement('li');
+        noResults.innerText = 'No users found';
+        usersList.appendChild(noResults);
+        return;
+      }
 
-            users.forEach((aUsername, index) => {
-                appendUserElement(aUsername, usersList);
+      users.forEach((user, index) => {
+        appendUserElement(user, usersList);
 
-                if (index < users.length - 1) {
-                    const separator = document.createElement('li');
-                    separator.classList.add('separator');
-                    usersList.appendChild(separator);
-                }
-            });
-        } catch (error) {
-            console.error('Error fetching users:', error);
-            const errorMessage = document.createElement('li');
-            errorMessage.innerText = 'Error fetching users. Please try again.';
-            usersList.appendChild(errorMessage);
+        if (index < users.length - 1) {
+          const separator = document.createElement('li');
+          separator.classList.add('separator');
+          usersList.appendChild(separator);
         }
-    } else {
-        const noInputMessage = document.createElement('li');
-        noInputMessage.innerText = 'Please enter a search term.';
-        usersList.appendChild(noInputMessage);
+      });
+    } catch (error) {
+      const errorMessage = document.createElement('li');
+      errorMessage.innerText = 'Error fetching users. Please try again.';
+      usersList.appendChild(errorMessage);
     }
+  } else {
+    const noInputMessage = document.createElement('li');
+    noInputMessage.innerText = 'Please enter a search term.';
+    usersList.appendChild(noInputMessage);
+  }
 }
 
+function appendUserElement(user, userList) {
+  const listItem = document.createElement('li');
+  const usernameSpan = document.createElement('span');
+  const userImage = document.createElement('img');
+
+  listItem.classList.add('room-item');
+  listItem.id = user.id;
+
+  userImage.src = '../images/user_icon.png';
+  userImage.alt = user.username;
+  usernameSpan.textContent = user.username;
+
+  const receivedMsgs = document.createElement('span');
+  receivedMsgs.textContent = '0';
+  receivedMsgs.classList.add('nbr-msg', 'hidden');
+
+  listItem.appendChild(userImage);
+  listItem.appendChild(usernameSpan);
+  listItem.appendChild(receivedMsgs);
+  listItem.addEventListener('click', searchItemClick);
+  userList.appendChild(listItem);
+}
+
+function searchItemClick(event) {
+  let found = false;
+  let activeRoom;
+
+  const roomsList = document.getElementById('connectedUsers');
+  const clickedUser = event.currentTarget;
+  const selectedUserId = clickedUser.getAttribute('id');
+
+  getRoom(selectedUserId).then(
+      room => {
+        roomsDetails[room.roomId] = room;
+        selectedRoomId = room.roomId;
+        if (roomsList) {
+          for (let listItem of roomsList.children) {
+            if (listItem.id === room.roomId) {
+              activeRoom = listItem;
+              found = true;
+            }
+          }
+        }
+
+        if (found === false) {
+          activeRoom = document.createElement('li');
+
+          activeRoom.classList.add('room-item');
+          activeRoom.id = room.roomId;
+
+          for (const child of clickedUser.children) {
+            const clonedChild = child.cloneNode(true);
+            activeRoom.appendChild(clonedChild);
+          }
+          roomsList.insertBefore(activeRoom, roomsList.firstChild)
+        }
+
+        messageForm.classList.remove('hidden');
+        chatArea.classList.remove("hidden");
+        searchArea.classList.add("hidden");
+        activeRoom.classList.add('active');
+        fetchAndDisplayUserChat().then();
+        const nbrMsg = clickedUser.querySelector('.nbr-msg');
+        nbrMsg.classList.add('hidden');
+        nbrMsg.textContent = '0';
+        activeRoom.addEventListener('click', roomItemClick);
+      }
+  ).catch(error => {
+    console.error("couldn't get the room", error);
+  })
+}
+
+async function getRoom(selectedUserId) {
+  const Room = {
+    type: "direct",
+    participants: [selectedUserId, currentUser.id],
+  }
+  let roomResponse = await fetch("/room", {
+    method: 'POST',
+    headers: createAuthHeaders(),
+    body: JSON.stringify(Room)
+  })
+
+  if (!roomResponse.ok) {
+    throw new Error(`error with getting roomId ${roomResponse.status}`);
+  }
+  return await roomResponse.json();
+}
 
 function onLogout() {
-    fetch("/auth/logout", {
-        method: "POST",
-        headers: createAuthHeaders()
-    })
-        .then(response => {
-            if (response.ok) {
-                console.log("Logout successful");
-                window.location.href = "/login";
-            } else {
-                console.log("Logout failed: " + response.status);
-            }
-        })
-        .catch(error => {
-            console.log("Error during logout: ", error);
-        });
+  fetch("/auth/logout", {
+    method: "POST",
+    headers: createAuthHeaders()
+  })
+  .then(response => {
+    if (response.ok) {
+      window.location.href = "/login";
+    } else {
+      console.log("Logout failed: " + response.status);
+    }
+  })
+  .catch(error => {
+    console.log("Error during logout: ", error);
+  });
 }
 
 messageForm.addEventListener('submit', sendMessage, true);

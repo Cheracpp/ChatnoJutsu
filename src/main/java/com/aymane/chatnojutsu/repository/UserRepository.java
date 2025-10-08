@@ -1,17 +1,19 @@
 package com.aymane.chatnojutsu.repository;
 
 import com.aymane.chatnojutsu.model.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByUsername(String username);
 
-    boolean existsByUsername(String username);
+  Optional<User> findByUsername(String username);
 
-    boolean existsByEmail(String email);
+  boolean existsByUsername(String username);
 
-    List<User> findUsersByUsernameContaining(String query);
+  boolean existsByEmail(String email);
+
+  List<User> findUsersByUsernameContaining(String query);
+
+  List<User> findByIdIn(List<Long> ids);
 }

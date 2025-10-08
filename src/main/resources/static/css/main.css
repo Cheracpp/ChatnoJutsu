@@ -24,7 +24,7 @@ body {
     border-radius: 8px;
 }
 
-.users-list {
+.rooms-list {
     flex: 1;
     border-right: 1px solid #ccc;
     padding: 20px;
@@ -38,44 +38,44 @@ body {
     justify-content: space-between;
 }
 
-.users-list-container {
+.rooms-list-container {
     height: 100%;
     overflow-y: scroll;
 }
 
-.users-list h2 {
+.rooms-list h2 {
     font-size: 1.5rem;
     margin-bottom: 10px;
 }
 
-.users-list ul {
+.rooms-list ul {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.user-item {
+.room-item {
     display: flex;
     align-items: center;
     margin-bottom: 8px;
     cursor: pointer;
 }
 
-.user-item.active {
+.room-item.active {
     background-color: #cdebff;
     color: #4f4f4f;
     padding: 10px;
     border-radius: 5px;
 }
 
-.user-item img {
+.room-item img {
     width: 40px;
     height: 40px;
     border-radius: 50%;
     margin-right: 10px;
 }
 
-.user-item span {
+.room-item span {
     font-weight: bold;
 }
 
@@ -116,7 +116,7 @@ li{
     word-wrap: break-word;
 }
 
-.user-item span.nbr-msg {
+.room-item span.nbr-msg {
     margin-left: 10px;
     background-color: #f8fa6f;
     color: white;

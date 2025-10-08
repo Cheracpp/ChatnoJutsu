@@ -4,46 +4,38 @@ import com.aymane.chatnojutsu.dto.RoomDTO;
 import com.aymane.chatnojutsu.mapper.RoomMapper;
 import com.aymane.chatnojutsu.model.Room;
 import com.aymane.chatnojutsu.repository.RoomRepository;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
 @Service
 public class RoomService {
-    private final RoomRepository roomRepository;
 
-    public RoomService(RoomRepository roomRepository) {
-        this.roomRepository = roomRepository;
-    }
+  private final RoomRepository roomRepository;
+  private final RoomMapper roomMapper;
 
-    public Room save(RoomDTO roomDTO) {
-        Room room = RoomMapper.RoomDTOtoRoom(roomDTO);
-        return roomRepository.save(room);
-    }
+  public RoomService(RoomRepository roomRepository, RoomMapper roomMapper) {
+    this.roomRepository = roomRepository;
+    this.roomMapper = roomMapper;
+  }
 
-    public String getRoomId(RoomDTO roomDTO) {
-        Optional<Room> optionalRoom = roomRepository.getRoom(roomDTO.messageFrom(), roomDTO.messageTo());
-        String roomId;
-        roomId = optionalRoom
-                .map(Room::getId)
-                .orElseGet(() -> save(roomDTO).getId());
-        return roomId;
-    }
-    public List<String> getChatsByUsername(String username){
-        List<String> listOfChats = new ArrayList<>();
-        List<Room> listOfRooms = roomRepository.findRoomsByUsername(username, Sort.by(Sort.Direction.DESC, "lastMessageSentAt"));
-        for(Room room : listOfRooms){
-            if(room.getLastMessageSentAt() == null){
-            }else if(Objects.equals(room.getMessageFrom(), username)){
-                listOfChats.add(room.getMessageTo());
-            }else {
-                listOfChats.add(room.getMessageFrom());
-            }
-        }
-        return listOfChats;
-    }
+  public Room save(RoomDTO roomDTO) {
+    Room room = roomMapper.fromRoomDTO(roomDTO);
+    return roomRepository.save(room);
+  }
+
+  public RoomDTO getRoomId(RoomDTO roomDTO) {
+    List<String> participants = roomDTO.participants();
+    Optional<Room> optionalRoom = roomRepository.findRoomWithExactParticipants(participants);
+    Room room = optionalRoom.orElseGet(() -> save(roomDTO));
+    return roomMapper.toRoomDTO(room);
+  }
+
+  public List<RoomDTO> getRoomsByUserId(String userId) {
+    List<Room> rooms = roomRepository.findByParticipantId(userId,
+        Sort.by(Sort.Direction.DESC, "lastMessageSentAt"));
+    return rooms.stream().map(roomMapper::toRoomDTO).collect(Collectors.toList());
+  }
 }

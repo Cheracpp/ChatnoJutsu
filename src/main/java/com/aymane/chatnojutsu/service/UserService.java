@@ -84,6 +84,9 @@ public class UserService {
             listOfUserUsernames.add(user.getUsername());
         }
         return listOfUserUsernames;
+  public Map<String, UserDTO> getUsersByIds(List<String> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return Collections.emptyMap();
     }
 
     // helpers
@@ -95,4 +98,9 @@ public class UserService {
             throw new PasswordFormatException(ErrorMessages.PASSWORD_WRONG_SIZE);
         }
     }
+
+    List<User> foundUsers = userRepository.findByIdIn(numericIds);
+    return foundUsers.stream().map(userMapper::toUserDTO)
+        .collect(Collectors.toMap(UserDTO::id, Function.identity()));
+  }
 }
