@@ -1,14 +1,14 @@
 package com.aymane.chatnojutsu.model;
 
-import jakarta.persistence.Id;
+import java.time.Instant;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
 
-@Document(collection = "room")
+@Document(collection = "rooms")
 @Getter
 @Setter
 @Builder
@@ -19,8 +19,9 @@ public class Room {
     private String roomId;
     private String[] participants;
     private String type;
+    private String name;
     @LastModifiedDate
-    private Date lastMessageSentAt;
+    private Instant lastMessageSentAt;
     @CreatedDate
-    private Date createdAt;
+    private Instant createdAt;
 }
