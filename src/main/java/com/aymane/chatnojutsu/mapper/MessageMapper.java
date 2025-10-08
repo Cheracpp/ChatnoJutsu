@@ -2,22 +2,17 @@ package com.aymane.chatnojutsu.mapper;
 
 import com.aymane.chatnojutsu.dto.MessageDTO;
 import com.aymane.chatnojutsu.model.Message;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants.ComponentModel;
+import org.mapstruct.ReportingPolicy;
 
-public class MessageMapper {
-    public static Message toMessage(MessageDTO messageDTO){
-        return Message.builder()
-                .messageFrom(messageDTO.messageFrom())
-                .messageTo(messageDTO.messageTo())
-                .content(messageDTO.content())
-                .createdAt(messageDTO.createdAt())
-                .build();
-    }
-    public static MessageDTO toMessageDTO(Message message){
-        return new MessageDTO(
-                message.getMessageFrom(),
-                message.getMessageTo(),
-                message.getContent(),
-                message.getCreatedAt()
-        );
-    }
+@Mapper(componentModel = ComponentModel.SPRING,
+    unmappedSourcePolicy = ReportingPolicy.IGNORE,
+    unmappedTargetPolicy = ReportingPolicy.IGNORE
+)
+public interface MessageMapper {
+
+  @Mapping(source = "authenticatedSenderId", target = "senderId")
+  Message fromMessageDTO(MessageDTO messageDTO, String authenticatedSenderId);
 }

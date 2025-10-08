@@ -1,6 +1,10 @@
 package com.aymane.chatnojutsu.dto;
 
-import java.util.Date;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import java.util.List;
 
-public record MessageDTO(String messageFrom, String messageTo, String content, Date createdAt) {
+public record MessageDTO(@NotBlank String roomId, @NotEmpty List<String> participants,
+                         @NotBlank String senderId, @NotBlank String content) {
+
 }

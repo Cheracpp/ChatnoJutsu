@@ -1,4 +1,7 @@
 package com.aymane.chatnojutsu.dto;
 
-public record LoginRequest(String username, String password) {
+import com.aymane.chatnojutsu.validation.ValidPassword;
+
+public record LoginRequest(String username, @ValidPassword String password) {
+
 }

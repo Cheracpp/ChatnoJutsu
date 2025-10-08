@@ -1,4 +1,5 @@
 package com.aymane.chatnojutsu.dto;
 
-public record UserDTO(String username, String password, String email) {
+public record UserDTO(String id, String username, String email) {
+
 }
