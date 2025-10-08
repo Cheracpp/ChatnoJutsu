@@ -24,12 +24,12 @@ public class JwtService {
     @Value("${jwt.cookie.expiry-seconds:1800}")
     private int cookieExpiry;
 
-    public String createToken(Long userId) {
+    public String createToken(String userId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + cookieExpiry * 1000L);
 
         return Jwts.builder()
-                .subject(String.valueOf(userId))
+                .subject(userId)
                 .issuedAt(new Date())
                 .expiration(expiryDate)
                 .signWith(key)

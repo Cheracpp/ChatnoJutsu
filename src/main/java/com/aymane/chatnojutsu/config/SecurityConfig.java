@@ -2,7 +2,6 @@ package com.aymane.chatnojutsu.config;
 
 import com.aymane.chatnojutsu.service.JwtService;
 import com.aymane.chatnojutsu.service.CsrfService;
-import com.aymane.chatnojutsu.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,7 +1,6 @@
 package com.aymane.chatnojutsu.config;
 
 import com.aymane.chatnojutsu.service.JwtService;
-import com.aymane.chatnojutsu.service.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

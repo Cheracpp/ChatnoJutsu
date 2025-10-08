@@ -1,89 +1,63 @@
 package com.aymane.chatnojutsu.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
+import java.util.HashSet;
+import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.*;
 
-
-@Builder
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "users", indexes = {
-    @Index(name = "idx_username", columnList = "username",  unique = true),
+    @Index(name = "idx_username", columnList = "username", unique = true),
     @Index(name = "idx_email", columnList = "email", unique = true)
 })
-public class User implements UserDetails {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column
-    @NotNull(message = "Username is mandatory" )
-    @Size(message = "Username character length must be between 3 and 20", min = 3, max = 20)
-    private String username;
-    @Column
-    @NotNull(message = "Password is mandatory")
-    @NotEmpty(message = "Password is mandatory")
-    private String password;
-    @Column
-    @NotEmpty(message = "Email is mandatory")
-    @NotNull(message = "Email is mandatory")
-    @Email(message = "Email must be well-formed")
-    private String email;
-    @Enumerated(EnumType.STRING)
-    private Role role;
+public class User {
 
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+  @Column
+  private String username;
+  @Column
+  private String password;
+  @Column
+  private String email;
+  @Enumerated(EnumType.STRING)
+  private Role role;
 
-    @ManyToMany
-    @JoinTable(
-            name = "friends",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "friend_id")
-    )
-    private Set<User> friends = new HashSet<>();
+  @ManyToMany
+  @JoinTable(
+      name = "friends",
+      joinColumns = @JoinColumn(name = "user_id"),
+      inverseJoinColumns = @JoinColumn(name = "friend_id")
+  )
+  private Set<User> friends = new HashSet<>();
 
-    public void addFriend(User friend){
-        this.friends.add(friend);
-        friend.getFriends().add(this);
-    }
-    public void removeFriend(User friend){
-        this.friends.remove(friend);
-        friend.getFriends().remove(this);
-    }
+  public void addFriend(User friend) {
+    this.friends.add(friend);
+    friend.getFriends().add(this);
+  }
 
-    // UserDetails methods
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.name()));
-    }
-
+  public void removeFriend(User friend) {
+    this.friends.remove(friend);
+    friend.getFriends().remove(this);
+  }
 }
