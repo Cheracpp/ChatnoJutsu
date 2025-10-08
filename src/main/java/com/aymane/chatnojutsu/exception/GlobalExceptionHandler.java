@@ -1,6 +1,9 @@
 package com.aymane.chatnojutsu.exception;
 
-import jakarta.validation.ConstraintViolation;
+import com.aymane.chatnojutsu.dto.ErrorResponse;
+import com.aymane.chatnojutsu.exception.user.FriendServiceException;
+import com.aymane.chatnojutsu.exception.user.UserNotFoundException;
+import com.aymane.chatnojutsu.util.FieldErrorDetail;
 import jakarta.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,30 +64,6 @@ public class GlobalExceptionHandler {
       }
     });
 
-    @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handleEmailAlreadyExistsException(EmailAlreadyExistsException e) {
-        log.error(HttpStatus.CONFLICT + " " + e.getMessage());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage()));
-    }
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException e){
-        log.error(HttpStatus.BAD_REQUEST + " " + e.getMessage());
-        List<String> errorMessages = new ArrayList<>();
-        for(ConstraintViolation<?> violation : e.getConstraintViolations()){
-            errorMessages.add(violation.getMessage());
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(),errorMessages.toString()));
-    }
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e){
-        log.error(HttpStatus.BAD_REQUEST + " " + e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
-    }
-    @ExceptionHandler(PasswordFormatException.class)
-    public ResponseEntity<ErrorResponse> handlePasswordFormatException(PasswordFormatException e){
-        log.error(HttpStatus.BAD_REQUEST + " " + e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(),e.getMessage()));
-    }
     Map<String, List<Map<String, String>>> response = new HashMap<>();
     response.put("errors", errorDetails);
 
@@ -112,4 +91,17 @@ public class GlobalExceptionHandler {
     return ResponseEntity.badRequest().body(errors);
   }
 
+  @ExceptionHandler(UserNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
+    ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.value(), "User Not Found",
+        ex.getMessage());
+    return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+  }
+
+  @ExceptionHandler(FriendServiceException.class)
+  public ResponseEntity<ErrorResponse> handleFriendServiceException(FriendServiceException ex) {
+    ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Invalid Request",
+        ex.getMessage());
+    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+  }
 }
