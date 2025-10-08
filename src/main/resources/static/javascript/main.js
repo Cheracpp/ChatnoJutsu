@@ -1,7 +1,9 @@
 'use strict';
 
-
-let username = localStorage.getItem('username');
+const currentUser = loggedInUser;
+if (currentUser == null) {
+  window.location.href = '/login';
+}
 
 const messageForm = document.querySelector('#messageForm');
 const messageInput = document.querySelector('#message');
@@ -18,26 +20,26 @@ let stompClient = null;
 
 // Utility function to get CSRF token from cookie
 function getCSRFToken() {
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-        const [name, value] = cookie.trim().split('=');
-        if (name === 'XSRF-TOKEN') {
-            return decodeURIComponent(value);
-        }
+  const cookies = document.cookie.split(';');
+  for (let cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === 'XSRF-TOKEN') {
+      return decodeURIComponent(value);
     }
-    return null;
+  }
+  return null;
 }
 
 // Utility function to create headers with CSRF token
 function createAuthHeaders() {
-    const csrfToken = getCSRFToken();
-    const headers = {
-        'Content-Type': 'application/json'
-    };
-    if (csrfToken) {
-        headers['X-XSRF-TOKEN'] = csrfToken;
-    }
-    return headers;
+  const csrfToken = getCSRFToken();
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+  if (csrfToken) {
+    headers['X-XSRF-TOKEN'] = csrfToken;
+  }
+  return headers;
 }
 
 const socket = new SockJS('/ws');
@@ -46,12 +48,11 @@ stompClient = Stomp.over(socket);
 stompClient.connect({}, onConnected, onError);
 
 function onConnected() {
-    console.log("onConnected");
-    stompClient.subscribe(`/user/queue/private`, onMessageReceived, (error) => {
-        console.error("Error during subscription", error);
-    });
-    document.querySelector('#connected-user-fullname').textContent = username;
-    fetchAndDisplayUsers().then();
+  stompClient.subscribe(`/user/queue/private`, onMessageReceived, (error) => {
+  });
+  document.querySelector(
+      '#connected-user-fullname').textContent = currentUser.username;
+  fetchAndDisplayUsers().then();
 }
 
 async function fetchAndDisplayUsers() {
@@ -173,18 +174,18 @@ function userItemClick(event) {
     nbrMsg.textContent = '0';
 }
 
-function displayMessage(messageFrom, content) {
-    const messageContainer = document.createElement('div');
-    messageContainer.classList.add('message');
-    if (messageFrom === username) {
-        messageContainer.classList.add('sender');
-    } else {
-        messageContainer.classList.add('receiver');
-    }
-    const message = document.createElement('p');
-    message.textContent = content;
-    messageContainer.appendChild(message);
-    chatMessagesSpace.appendChild(messageContainer);
+function displayMessage(senderId, content) {
+  const messageContainer = document.createElement('div');
+  messageContainer.classList.add('message');
+  if (senderId === currentUser.id) {
+    messageContainer.classList.add('sender');
+  } else {
+    messageContainer.classList.add('receiver');
+  }
+  const message = document.createElement('p');
+  message.textContent = content;
+  messageContainer.appendChild(message);
+  chatMessagesSpace.appendChild(messageContainer);
 }
 
 async function fetchAndDisplayUserChat() {
@@ -272,7 +273,7 @@ async function getUsers(){
 
             let users = await usersResponse.json();
 
-            users = users.filter(aUsername => (aUsername !== username));
+      users = users.filter(user => (user.id !== currentUser.id));
 
             if (users.length === 0) {
                 const noResults = document.createElement('li');
