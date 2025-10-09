@@ -7,6 +7,7 @@ import com.aymane.chatnojutsu.repository.RoomRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ public class RoomService {
   private final RoomRepository roomRepository;
   private final RoomMapper roomMapper;
 
+  @Autowired
   public RoomService(RoomRepository roomRepository, RoomMapper roomMapper) {
     this.roomRepository = roomRepository;
     this.roomMapper = roomMapper;
