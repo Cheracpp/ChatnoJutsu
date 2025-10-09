@@ -1,124 +1,231 @@
 package com.aymane.chatnojutsu.unit.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.aymane.chatnojutsu.config.CustomUserDetails;
 import com.aymane.chatnojutsu.controller.UserController;
+import com.aymane.chatnojutsu.dto.RegisterRequest;
 import com.aymane.chatnojutsu.dto.UserDTO;
 import com.aymane.chatnojutsu.model.User;
-import com.aymane.chatnojutsu.service.RoomService;
+import com.aymane.chatnojutsu.repository.UserRepository;
 import com.aymane.chatnojutsu.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(value = UserController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
 public class UserControllerTest {
-    @Autowired
-    MockMvc mockMvc;
-    @MockBean
-    UserService userService;
-    @MockBean
-    RoomService roomService;
-    @Autowired
-    ObjectMapper objectMapper;
 
-    private UserDTO validUserDTO;
-    private User mockedUser;
-    @BeforeEach
-    public void setUpEnvironment(){
-        // Create a valid userDTO that can be used across all the tests.
-        validUserDTO = new UserDTO(
-                "standardUser",
-                "standardPassword",
-                "standard@email.com"
-        );
-        // create a mocked user object with predefined id
-        mockedUser = new User();
-        mockedUser.setId(1L);
+  @Autowired
+  private MockMvc mockMvc;
 
-        // reset the mocked userService so we maintain the clean state
-        reset(userService);
+  @MockitoBean
+  private UserService userService;
 
-    }
-    @Test
-    public void createNewUser_WithValidInput_UserCreated() throws Exception {
-        // Convert the validUser DTO to JSON
-        String userJSON = objectMapper.writeValueAsString(validUserDTO);
+  @MockitoBean
+  private UserRepository userRepository;
 
-        // Mock the behaviour of userService
-        given(userService.registerNewUser(any(UserDTO.class))).willReturn(mockedUser);
+  @Autowired
+  private ObjectMapper objectMapper;
 
-        // Perform the request and validate
-        mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(userJSON))
-                .andExpect(status().isCreated())
-                .andExpect(header().string("Location", "http://localhost/users/1"));
+  private User testUser;
+  private UserDTO testUserDTO;
+  private RegisterRequest validRegisterRequest;
+  private CustomUserDetails mockUserDetails;
 
-        // Capture and verify UserDTO
-        ArgumentCaptor<UserDTO> captor = ArgumentCaptor.forClass(UserDTO.class);
-        verify(userService).registerNewUser(captor.capture());
-        UserDTO capturedUser = captor.getValue();
+  @BeforeEach
+  public void setUp() {
+    testUser = new User();
+    testUser.setId(1L);
+    testUser.setUsername("testuser");
+    testUser.setEmail("test@example.com");
 
-        // Assertions
-        assertAll(
-                () -> assertEquals("standardUser", capturedUser.username()),
-                () -> assertEquals("standard@email.com", capturedUser.email()),
-                () -> assertEquals("standardPassword", capturedUser.password())
-        );
-    }
+    testUserDTO = new UserDTO("1", "testuser", "test@example.com");
 
+    validRegisterRequest = new RegisterRequest("testuser", "ValidPass123!", "test@example.com");
 
-    @Test
-    public void getAllUsers_WhenUsersExist_ReturnsUserList() throws Exception {
-        // creating a list of 3 users
-        List<String> usernames = Arrays.asList(validUserDTO.username(), "user2", "user3");
+    mockUserDetails = new CustomUserDetails("1", "testuser", "password", Collections.emptyList());
+  }
 
-        // Mocking the behaviour of userService
-        given(userService.getAllUsers()).willReturn(usernames);
+  @Test
+  public void createNewUser_WithValidInput_ReturnsCreatedAndLocation() throws Exception {
+    given(userService.registerNewUser(any(RegisterRequest.class))).willReturn(testUser);
 
-        // Perform the request and validate that users
-        mockMvc.perform(get("/users"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0]").value("standardUser"))
-                .andExpect(jsonPath("$[1]").value("user2"))
-                .andExpect(jsonPath("$[2]").value("user3"));
-    }
+    mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(validRegisterRequest)))
+        .andExpect(status().isCreated())
+        .andExpect(header().string("Location", "http://localhost/users/1"));
 
+    verify(userService).registerNewUser(any(RegisterRequest.class));
+  }
 
-    @Test
-    void getUsers_ShouldReturnListOfUsers() throws Exception {
-        // Given
-        String query = "john";
-        List<String> mockUsers = List.of("john_doe", "john_smith");
-        given(userService.getUsers(query)).willReturn(mockUsers);
+  @Test
+  public void createNewUser_WithInvalidInput_ReturnsBadRequest() throws Exception {
+    RegisterRequest invalidRequest = new RegisterRequest("", "", "");
 
-        mockMvc.perform(get("/users/searchUsers")
-                        .param("query", query))
-                .andExpect(status().isOk())
-                .andExpect(content().json("[\"john_doe\", \"john_smith\"]")); // Expect JSON response
+    mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(invalidRequest)))
+        .andExpect(status().isBadRequest());
+  }
 
-        // Verify service interaction
-        verify(userService).getUsers(query);
-    }
+  @Test
+  public void getAllUsers_ReturnsListOfUsers() throws Exception {
+    UserDTO user1 = new UserDTO("1", "user1", "user1@example.com");
+    UserDTO user2 = new UserDTO("2", "user2", "user2@example.com");
+    UserDTO user3 = new UserDTO("3", "user3", "user3@example.com");
+    List<UserDTO> users = List.of(user1, user2, user3);
+
+    given(userService.getAllUsers()).willReturn(users);
+
+    mockMvc.perform(get("/users")).andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.length()").value(3)).andExpect(jsonPath("$[0].id").value("1"))
+        .andExpect(jsonPath("$[0].username").value("user1"))
+        .andExpect(jsonPath("$[0].email").value("user1@example.com"))
+        .andExpect(jsonPath("$[1].id").value("2")).andExpect(jsonPath("$[2].id").value("3"));
+
+    verify(userService).getAllUsers();
+  }
+
+  @Test
+  public void getAllUsers_WhenNoUsers_ReturnsEmptyList() throws Exception {
+    given(userService.getAllUsers()).willReturn(Collections.emptyList());
+
+    mockMvc.perform(get("/users")).andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.length()").value(0));
+
+    verify(userService).getAllUsers();
+  }
+
+  @Test
+  public void getUsers_WithValidQuery_ReturnsMatchingUsers() throws Exception {
+    String query = "test";
+    List<UserDTO> matchingUsers = List.of(testUserDTO);
+
+    given(userService.getUsersByQuery(query)).willReturn(matchingUsers);
+
+    mockMvc.perform(get("/users/search").param("query", query)).andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].id").value("1"))
+        .andExpect(jsonPath("$[0].username").value("testuser"));
+
+    verify(userService).getUsersByQuery(query);
+  }
+
+  @Test
+  public void getUsers_WithShortQuery_ReturnsBadRequest() throws Exception {
+    mockMvc.perform(get("/users/search").param("query", "ab")).andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void getUsers_WithBlankQuery_ReturnsBadRequest() throws Exception {
+    mockMvc.perform(get("/users/search").param("query", "   ")).andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void getUsers_WithMissingQuery_ReturnsBadRequest() throws Exception {
+    mockMvc.perform(get("/users/search")).andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void addFriend_WithValidFriendId_ReturnsSuccess() throws Exception {
+    String friendId = "2";
+    User updatedUser = new User();
+    updatedUser.setId(1L);
+
+    given(userRepository.findById(2L)).willReturn(java.util.Optional.of(new User()));
+    given(userService.addFriend(any(), any())).willReturn(updatedUser);
+
+    mockMvc.perform(post("/users/friends/{friendId}", friendId).with(user(mockUserDetails)))
+        .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.message").value("User '1' is now friends with '2'."));
+
+    verify(userService).addFriend(null, friendId);
+  }
+
+  @Test
+  public void addFriend_WithInvalidFriendId_ReturnsBadRequest() throws Exception {
+    mockMvc.perform(post("/users/friends/{friendId}", "invalid-id").with(user(mockUserDetails)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void removeFriend_WithValidFriendId_ReturnsSuccess() throws Exception {
+    String friendId = "2";
+    User updatedUser = new User();
+    updatedUser.setId(1L);
+
+    given(userRepository.findById(2L)).willReturn(java.util.Optional.of(new User()));
+    given(userService.removeFriend(any(), any())).willReturn(updatedUser);
+
+    mockMvc.perform(delete("/users/friends/{friendId}", friendId).with(user(mockUserDetails)))
+        .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.message").value("User '1' is no longer friends with '2'."));
+
+    verify(userService).removeFriend(null, friendId);
+  }
+
+  @Test
+  public void removeFriend_WithInvalidFriendId_ReturnsBadRequest() throws Exception {
+    mockMvc.perform(delete("/users/friends/{friendId}", "invalid-id").with(user(mockUserDetails)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void getUsersDetails_WithValidUserIds_ReturnsUserMap() throws Exception {
+    List<String> userIds = List.of("1", "2", "3");
+    UserDTO user1 = new UserDTO("1", "user1", "user1@example.com");
+    UserDTO user2 = new UserDTO("2", "user2", "user2@example.com");
+    UserDTO user3 = new UserDTO("3", "user3", "user3@example.com");
+    Map<String, UserDTO> usersMap = Map.of("1", user1, "2", user2, "3", user3);
+
+    given(userService.getUsersByIds(anyList())).willReturn(usersMap);
+
+    mockMvc.perform(post("/users/details").contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(userIds))).andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.['1'].username").value("user1"))
+        .andExpect(jsonPath("$.['2'].username").value("user2"))
+        .andExpect(jsonPath("$.['3'].username").value("user3"));
+
+    verify(userService).getUsersByIds(anyList());
+  }
+
+  @Test
+  public void getUsersDetails_WithEmptyList_ReturnsEmptyMap() throws Exception {
+    List<String> emptyList = Collections.emptyList();
+    Map<String, UserDTO> emptyMap = Collections.emptyMap();
+
+    given(userService.getUsersByIds(anyList())).willReturn(emptyMap);
+
+    mockMvc.perform(post("/users/details").contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(emptyList))).andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$").isEmpty());
+
+    verify(userService).getUsersByIds(anyList());
+  }
 }
-
