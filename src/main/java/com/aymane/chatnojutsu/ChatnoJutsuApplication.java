@@ -2,13 +2,12 @@ package com.aymane.chatnojutsu;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 
 @SpringBootApplication
 public class ChatnoJutsuApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(ChatnoJutsuApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(ChatnoJutsuApplication.class, args);
+  }
 
 }

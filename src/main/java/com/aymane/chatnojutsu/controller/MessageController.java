@@ -1,14 +1,13 @@
 package com.aymane.chatnojutsu.controller;
 
-import com.aymane.chatnojutsu.config.CustomUserDetails;
 import com.aymane.chatnojutsu.dto.MessageDTO;
 import com.aymane.chatnojutsu.model.Message;
 import com.aymane.chatnojutsu.service.MessageService;
+import java.security.Principal;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,9 +23,8 @@ public class MessageController {
   }
 
   @MessageMapping("/chat")
-  public void processMessage(@Payload MessageDTO messageDTO,
-      @AuthenticationPrincipal CustomUserDetails userDetails) {
-    String userId = userDetails.getUsername();
+  public void processMessage(@Payload MessageDTO messageDTO, Principal principal) {
+    String userId = principal.getName();
     messageService.save(messageDTO, userId);
     messageService.sendMessage(messageDTO, userId);
   }
