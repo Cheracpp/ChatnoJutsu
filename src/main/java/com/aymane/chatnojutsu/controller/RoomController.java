@@ -1,7 +1,7 @@
 package com.aymane.chatnojutsu.controller;
 
 import com.aymane.chatnojutsu.dto.RoomDTO;
-import com.aymane.chatnojutsu.service.RoomService;
+import com.aymane.chatnojutsu.service.RoomServiceImpl;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class RoomController {
 
-  RoomService roomService;
+  RoomServiceImpl roomService;
 
   @Autowired
-  public RoomController(RoomService roomService) {
+  public RoomController(RoomServiceImpl roomService) {
     this.roomService = roomService;
   }
 

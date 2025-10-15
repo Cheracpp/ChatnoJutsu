@@ -2,103 +2,67 @@ package com.aymane.chatnojutsu.service;
 
 import com.aymane.chatnojutsu.dto.RegisterRequest;
 import com.aymane.chatnojutsu.dto.UserDTO;
-import com.aymane.chatnojutsu.exception.user.FriendServiceException;
-import com.aymane.chatnojutsu.exception.user.UserNotFoundException;
-import com.aymane.chatnojutsu.mapper.UserMapper;
-import com.aymane.chatnojutsu.model.Role;
 import com.aymane.chatnojutsu.model.User;
-import com.aymane.chatnojutsu.repository.UserRepository;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
-@Service
-public class UserService {
+/**
+ * Service interface for managing user-related operations.
+ *
+ * <p>This interface defines the contract for user management functionality including
+ * user registration, friend management, and user retrieval operations.</p>
+ */
+public interface UserService {
 
-  private final UserMapper userMapper;
-  private final UserRepository userRepository;
-  private final PasswordEncoder passwordEncoder;
+  /**
+   * Registers a new user in the system.
+   *
+   * @param registerRequest the registration request containing user details
+   * @return the newly created User entity
+   */
+  User registerNewUser(RegisterRequest registerRequest);
 
-  @Autowired
-  public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-      UserMapper userMapper) {
-    this.userRepository = userRepository;
-    this.passwordEncoder = passwordEncoder;
-    this.userMapper = userMapper;
-  }
+  /**
+   * Adds a friend relationship between two users.
+   *
+   * @param loggedInUserId the ID of the currently logged-in user who wants to add a friend
+   * @param friendId       the ID of the user to be added as a friend
+   * @return the updated User entity of the logged-in user with the new friend added
+   */
+  User addFriend(String loggedInUserId, String friendId);
 
-  public User registerNewUser(RegisterRequest registerRequest) {
-    User user = userMapper.fromRegisterRequest(registerRequest);
-    user.setPassword(passwordEncoder.encode(user.getPassword()));
-    user.setRole(Role.USER);
-    userRepository.save(user);
-    return user;
-  }
+  /**
+   * Removes a friend relationship between two users.
+   *
+   * @param loggedInUserId the ID of the currently logged-in user who wants to remove a friend
+   * @param friendId       the ID of the user to be removed from friends
+   * @return the updated User entity of the logged-in user with the friend removed
+   */
+  User removeFriend(String loggedInUserId, String friendId);
 
-  public User addFriend(String loggedInUserId, String friendId) {
-    User currentUser = userRepository.findById(Long.parseLong(loggedInUserId)).orElseThrow(
-        () -> new UserNotFoundException(
-            "Logged-in user with id " + loggedInUserId + " not found."));
-    User friendToAdd = userRepository.findById(Long.parseLong(friendId))
-        .orElseThrow(() -> new UserNotFoundException("Friend with id " + friendId + " not found."));
+  /**
+   * Retrieves all users in the system.
+   *
+   * @return a list of UserDTO objects representing all users
+   */
+  List<UserDTO> getAllUsers();
 
-    if (currentUser.getId().equals(friendToAdd.getId())) {
-      throw new FriendServiceException("User can't add a friend with the same id.");
-    }
+  /**
+   * Searches for users based on a query string.
+   *
+   * <p>The query typically matches against user fields such as username,
+   * display name, or email address.</p>
+   *
+   * @param query the search query string to match users against
+   * @return a list of UserDTO objects matching the search criteria
+   */
+  List<UserDTO> getUsersByQuery(String query);
 
-    if (currentUser.getFriends().contains(friendToAdd)) {
-      throw new FriendServiceException(friendToAdd.getUsername() + " is already a friend.");
-    }
-
-    currentUser.addFriend(friendToAdd);
-
-    return userRepository.save(currentUser);
-  }
-
-  public User removeFriend(String loggedInUserId, String friendId) {
-    User currentUser = userRepository.findById(Long.parseLong(loggedInUserId)).orElseThrow(
-        () -> new UserNotFoundException(
-            "Logged-in user with id " + loggedInUserId + " not found."));
-    User friendToAdd = userRepository.findById(Long.parseLong(friendId))
-        .orElseThrow(() -> new UserNotFoundException("Friend with id " + friendId + " not found."));
-
-    if (currentUser.getId().equals(friendToAdd.getId())) {
-      throw new FriendServiceException("User can't remove a friend with the same id.");
-    }
-
-    if (!currentUser.getFriends().contains(friendToAdd)) {
-      throw new FriendServiceException(friendToAdd.getUsername() + " is already not a friend.");
-    }
-
-    currentUser.removeFriend(friendToAdd);
-
-    return userRepository.save(currentUser);
-  }
-
-  public List<UserDTO> getAllUsers() {
-    List<User> users = userRepository.findAll();
-    return users.stream().map(userMapper::toUserDTO).collect(Collectors.toList());
-  }
-
-  public List<UserDTO> getUsersByQuery(String query) {
-    List<User> listOfUsers = userRepository.findUsersByUsernameContaining(query);
-    return listOfUsers.stream().map(userMapper::toUserDTO).collect(Collectors.toList());
-  }
-
-  public Map<String, UserDTO> getUsersByIds(List<String> ids) {
-    if (ids == null || ids.isEmpty()) {
-      return Collections.emptyMap();
-    }
-
-    List<Long> numericIds = ids.stream().map(Long::parseLong).collect(Collectors.toList());
-
-    List<User> foundUsers = userRepository.findByIdIn(numericIds);
-    return foundUsers.stream().map(userMapper::toUserDTO)
-        .collect(Collectors.toMap(UserDTO::id, Function.identity()));
-  }
+  /**
+   * Retrieves multiple users by their IDs.
+   *
+   * @param ids the list of user IDs to retrieve
+   * @return a map where keys are user IDs and values are corresponding UserDTO objects
+   */
+  Map<String, UserDTO> getUsersByIds(List<String> ids);
 }

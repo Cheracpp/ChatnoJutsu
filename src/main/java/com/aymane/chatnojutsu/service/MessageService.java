@@ -1,54 +1,49 @@
 package com.aymane.chatnojutsu.service;
 
 import com.aymane.chatnojutsu.dto.MessageDTO;
-import com.aymane.chatnojutsu.mapper.MessageMapper;
 import com.aymane.chatnojutsu.model.Message;
-import com.aymane.chatnojutsu.repository.MessageRepository;
-import com.aymane.chatnojutsu.repository.RoomRepository;
-import java.util.ArrayList;
 import java.util.List;
-import org.springframework.data.domain.Sort;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Service;
 
-@Service
-public class MessageService {
+/**
+ * Service interface for managing message-related operations.
+ *
+ * <p>This interface defines the contract for message management functionality including
+ * saving messages, retrieving chat history, and sending messages in real-time.</p>
+ */
+public interface MessageService {
 
-  private static final String DIRECT_DESTINATION = "/queue/private";
-  private final MessageRepository messageRepository;
-  private final RoomRepository roomRepository;
-  private final SimpMessagingTemplate messagingTemplate;
-  private final MessageMapper messageMapper;
+  /**
+   * Saves a message to the database.
+   *
+   * <p>Persists a message sent by a user to a specific chat room
+   * or conversation.</p>
+   *
+   * @param messageDTO the message data transfer object containing message content and metadata
+   * @param senderId   the unique identifier of the user sending the message
+   * @return the saved Message entity with generated ID and timestamp
+   */
+  Message save(MessageDTO messageDTO, String senderId);
 
-  public MessageService(MessageRepository messageRepository, RoomRepository roomRepository,
-      SimpMessagingTemplate messagingTemplate, MessageMapper messageMapper) {
-    this.messageRepository = messageRepository;
-    this.roomRepository = roomRepository;
-    this.messagingTemplate = messagingTemplate;
-    this.messageMapper = messageMapper;
-  }
+  /**
+   * Retrieves all messages for a specific chat room.
+   *
+   * <p>Returns messages in chronological order (oldest to newest)
+   * to maintain conversation flow.</p>
+   *
+   * @param roomId the unique identifier of the chat room
+   * @return a list of Message objects belonging to the specified room, or an empty list if no
+   * messages exist
+   */
+  List<Message> getMessagesByRoomId(String roomId);
 
-  public Message save(MessageDTO messageDTO, String senderId) {
-    // save the message first
-    Message message = messageRepository.save(messageMapper.fromMessageDTO(messageDTO, senderId));
-
-    // update the lastSentAt field in room document
-    roomRepository.updateLastMessageSentAt(message.getRoomId(), message.getTimestamp());
-    return message;
-  }
-
-  public List<Message> getMessagesByRoomId(String roomId) {
-    return messageRepository.findByRoomId(roomId, Sort.by(Sort.Direction.ASC, "timestamp"))
-        .orElse(new ArrayList<>());
-  }
-
-  public void sendMessage(MessageDTO message, String senderId) {
-    for (String participant : message.participants()) {
-      if (participant.equals(senderId)) {
-        continue;
-      }
-
-      messagingTemplate.convertAndSendToUser(participant, DIRECT_DESTINATION, message);
-    }
-  }
+  /**
+   * Sends a message in real-time to all connected clients in a chat room.
+   *
+   * <p>Handles the real-time delivery of messages through
+   * WebSocket connections.</p>
+   *
+   * @param message  the message data transfer object to be sent
+   * @param senderId the unique identifier of the user sending the message
+   */
+  void sendMessage(MessageDTO message, String senderId);
 }

@@ -1,43 +1,50 @@
 package com.aymane.chatnojutsu.service;
 
 import com.aymane.chatnojutsu.dto.RoomDTO;
-import com.aymane.chatnojutsu.mapper.RoomMapper;
 import com.aymane.chatnojutsu.model.Room;
-import com.aymane.chatnojutsu.repository.RoomRepository;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
 
-@Service
-public class RoomService {
+/**
+ * Service interface for managing chat room operations.
+ *
+ * <p>This interface defines the contract for room management functionality including
+ * creating new rooms, retrieving room information, and managing user-room associations.</p>
+ */
+public interface RoomService {
 
-  private final RoomRepository roomRepository;
-  private final RoomMapper roomMapper;
+  /**
+   * Creates and saves a new chat room.
+   *
+   * <p>Persists a new room entity based on the provided room data.
+   * The room will be created with the specified properties and assigned a unique identifier.</p>
+   *
+   * @param roomDTO the room data transfer object containing room details such as name and
+   *                participants
+   * @return the saved Room entity with generated ID and metadata
+   */
+  Room save(RoomDTO roomDTO);
 
-  @Autowired
-  public RoomService(RoomRepository roomRepository, RoomMapper roomMapper) {
-    this.roomRepository = roomRepository;
-    this.roomMapper = roomMapper;
-  }
+  /**
+   * Retrieves or generates a room identifier based on room criteria.
+   *
+   * <p>Finds an existing room that matches the criteria in the provided
+   * RoomDTO, or creates one if it doesn't exist.</p>
+   *
+   * @param roomDTO the room data transfer object containing criteria to match against existing
+   *                rooms
+   * @return a RoomDTO containing the room ID and relevant room information
+   */
+  RoomDTO getRoomId(RoomDTO roomDTO);
 
-  public Room save(RoomDTO roomDTO) {
-    Room room = roomMapper.fromRoomDTO(roomDTO);
-    return roomRepository.save(room);
-  }
-
-  public RoomDTO getRoomId(RoomDTO roomDTO) {
-    List<String> participants = roomDTO.participants();
-    Optional<Room> optionalRoom = roomRepository.findRoomWithExactParticipants(participants);
-    Room room = optionalRoom.orElseGet(() -> save(roomDTO));
-    return roomMapper.toRoomDTO(room);
-  }
-
-  public List<RoomDTO> getRoomsByUserId(String userId) {
-    List<Room> rooms = roomRepository.findByParticipantId(userId,
-        Sort.by(Sort.Direction.DESC, "lastMessageSentAt"));
-    return rooms.stream().map(roomMapper::toRoomDTO).collect(Collectors.toList());
-  }
+  /**
+   * Retrieves all chat rooms associated with a specific user.
+   *
+   * <p>Returns all rooms where the specified user is a participant,
+   * allowing users to see their active conversations and group chats.</p>
+   *
+   * @param userId the unique identifier of the user whose rooms to retrieve
+   * @return a list of RoomDTO objects representing all rooms the user participates in, or an empty
+   * list if the user has no rooms
+   */
+  List<RoomDTO> getRoomsByUserId(String userId);
 }
