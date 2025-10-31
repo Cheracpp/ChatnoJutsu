@@ -51,8 +51,9 @@ stompClient = Stomp.over(socket);
 stompClient.connect({}, onConnected, onError);
 
 function onConnected() {
-  stompClient.subscribe(`/user/queue/private`, onMessageReceived, (error) => {
-  });
+  stompClient.subscribe(`/queue/${currentUser.id}`, onMessageReceived,
+      (error) => {
+      });
   document.querySelector(
       '#connected-user-fullname').textContent = currentUser.username;
   fetchAndDisplayUsers().then();
@@ -76,7 +77,7 @@ async function fetchAndDisplayUsers() {
 
   // assuming only direct rooms exist
   let users = [...new Set(rooms.flatMap((room) => room.participants)
-  .filter(participantId => participantId !== currentUser.id))];
+      .filter(participantId => participantId !== currentUser.id))];
   if (!users) {
     users = [];
   }
@@ -214,8 +215,10 @@ function sendMessage(event) {
 }
 
 async function onMessageReceived(payload) {
-  await fetchAndDisplayUsers();
   const message = JSON.parse(payload.body);
+  if (roomsDetails === null || !Object.hasOwn(roomsDetails, message.roomId)) {
+    await fetchAndDisplayUsers();
+  }
   // if the room is already open
   if (selectedRoomId && selectedRoomId === message.roomId) {
     displayMessage(message.senderId, message.content);
@@ -388,16 +391,16 @@ function onLogout() {
     method: "POST",
     headers: createAuthHeaders()
   })
-  .then(response => {
-    if (response.ok) {
-      window.location.href = "/login";
-    } else {
-      console.log("Logout failed: " + response.status);
-    }
-  })
-  .catch(error => {
-    console.log("Error during logout: ", error);
-  });
+      .then(response => {
+        if (response.ok) {
+          window.location.href = "/login";
+        } else {
+          console.log("Logout failed: " + response.status);
+        }
+      })
+      .catch(error => {
+        console.log("Error during logout: ", error);
+      });
 }
 
 messageForm.addEventListener('submit', sendMessage, true);

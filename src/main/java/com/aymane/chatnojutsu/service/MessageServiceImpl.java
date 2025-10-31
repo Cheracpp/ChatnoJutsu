@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class MessageServiceImpl implements MessageService {
 
-  private static final String DIRECT_DESTINATION = "/queue/private";
+  private static final String DIRECT_DESTINATION = "/queue/";
   private final MessageRepository messageRepository;
   private final RoomRepository roomRepository;
   private final SimpMessagingTemplate messagingTemplate;
@@ -51,7 +51,7 @@ public class MessageServiceImpl implements MessageService {
         continue;
       }
 
-      messagingTemplate.convertAndSendToUser(participant, DIRECT_DESTINATION, message);
+      messagingTemplate.convertAndSend(DIRECT_DESTINATION + participant, message);
     }
   }
 }

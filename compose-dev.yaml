@@ -20,6 +20,20 @@ services:
     volumes:
       - mongodb-dev-data:/data/db
 
+  rabbitmq:
+    image: rabbitmq:3.11-management
+    container_name: my-chat-rabbitmq
+    hostname: my-rabbit
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "61613:61613"
+    volumes:
+      - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+
 volumes:
   postgres-dev-data:
   mongodb-dev-data:

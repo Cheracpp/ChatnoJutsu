@@ -37,6 +37,25 @@ services:
       timeout: 5s
       retries: 5
 
+  rabbitmq:
+    image: rabbitmq:3.11-management
+    container_name: my-chat-rabbitmq
+    hostname: my-rabbit
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "61613:61613"
+    volumes:
+      - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-user}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-password}
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_local_alarms" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   app:
     build:
       context: .
@@ -56,6 +75,14 @@ services:
       DB_POOL_SIZE: 20
       DB_POOL_MIN_IDLE: 5
       DB_CONN_TIMEOUT: 30000
+      RABBITMQ_HOST: localhost
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER:-user}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-password}
+      RELAY_HOST: localhost
+      RELAY_PORT: 61613
+      RELAY_USER: ${RELAY_USER:-user}
+      RELAY_PASSWORD: ${RELAY_PASSWORD:-password}
     ports:
       - "8080:8080"
     depends_on:
