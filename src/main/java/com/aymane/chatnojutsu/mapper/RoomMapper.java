@@ -4,17 +4,14 @@ import com.aymane.chatnojutsu.dto.RoomDTO;
 import com.aymane.chatnojutsu.model.Room;
 import java.util.Arrays;
 import java.util.List;
+import org.bson.types.ObjectId;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants.ComponentModel;
 import org.mapstruct.ReportingPolicy;
 
 
-@Mapper(
-    componentModel = ComponentModel.SPRING,
-    unmappedTargetPolicy = ReportingPolicy.IGNORE,
-    unmappedSourcePolicy = ReportingPolicy.IGNORE
-)
+@Mapper(componentModel = ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.IGNORE, unmappedSourcePolicy = ReportingPolicy.IGNORE)
 public interface RoomMapper {
 
   RoomDTO toRoomDTO(Room room);
@@ -28,5 +25,9 @@ public interface RoomMapper {
 
   default String[] mapListToArray(List<String> list) {
     return list.toArray(String[]::new);
+  }
+
+  default String mapObjectIdToString(ObjectId objectId) {
+    return objectId.toString();
   }
 }

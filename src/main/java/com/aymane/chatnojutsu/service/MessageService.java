@@ -3,6 +3,7 @@ package com.aymane.chatnojutsu.service;
 import com.aymane.chatnojutsu.dto.MessageDTO;
 import com.aymane.chatnojutsu.model.Message;
 import java.util.List;
+import org.bson.types.ObjectId;
 
 /**
  * Service interface for managing message-related operations.
@@ -34,7 +35,7 @@ public interface MessageService {
    * @return a list of Message objects belonging to the specified room, or an empty list if no
    * messages exist
    */
-  List<Message> getMessagesByRoomId(String roomId);
+  List<Message> getMessagesByRoomId(ObjectId roomId);
 
   /**
    * Sends a message in real-time to all connected clients in a chat room.

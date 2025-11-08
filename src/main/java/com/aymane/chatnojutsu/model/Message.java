@@ -1,7 +1,12 @@
 package com.aymane.chatnojutsu.model;
 
 import java.time.Instant;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
@@ -14,14 +19,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @NoArgsConstructor
 @Document(collection = "messages")
-@CompoundIndex(name = "room_created_idx", def = "{'roomId': 1, 'timestamp': 1}")
+@CompoundIndex(name = "room_created_idx", def = "{'roomId': 1, 'timestamp': -1}")
 public class Message {
-    @Id
-    private String messageId;
-    private String roomId;
-    private String senderId;
-    private String content;
-    @CreatedDate
-    private Instant timestamp;
+
+  @Id
+  private ObjectId messageId;
+  private ObjectId roomId;
+  private String senderId;
+  private String content;
+  @CreatedDate
+  private Instant timestamp;
 }
 

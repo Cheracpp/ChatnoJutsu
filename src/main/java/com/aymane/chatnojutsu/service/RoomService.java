@@ -39,8 +39,9 @@ public interface RoomService {
   /**
    * Retrieves all chat rooms associated with a specific user.
    *
-   * <p>Returns all rooms where the specified user is a participant,
-   * allowing users to see their active conversations and group chats.</p>
+   * <p>Returns all rooms where the specified user is a participant. the rooms are ordered by the
+   * timestamp of the last message sent on each room, allowing users to see their most recent active
+   * conversations at the top.</p>
    *
    * @param userId the unique identifier of the user whose rooms to retrieve
    * @return a list of RoomDTO objects representing all rooms the user participates in, or an empty

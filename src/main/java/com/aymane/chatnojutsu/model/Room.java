@@ -6,10 +6,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 
@@ -19,16 +19,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@CompoundIndex(name = "userId_lastMessageSentAt", def = "{'participants' : 1, 'lastMessageSentAt' : -1}")
 public class Room {
 
   @Id
-  private String roomId;
+  private ObjectId roomId;
+  @Indexed
   private String[] participants;
   private String type;
   private String name;
-  @LastModifiedDate
-  private Instant lastMessageSentAt;
   @CreatedDate
   private Instant createdAt;
 }

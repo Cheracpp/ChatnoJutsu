@@ -7,6 +7,7 @@ import com.aymane.chatnojutsu.repository.MessageRepository;
 import com.aymane.chatnojutsu.repository.RoomRepository;
 import java.util.ArrayList;
 import java.util.List;
+import org.bson.types.ObjectId;
 import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -30,16 +31,11 @@ public class MessageServiceImpl implements MessageService {
 
   @Override
   public Message save(MessageDTO messageDTO, String senderId) {
-    // save the message first
-    Message message = messageRepository.save(messageMapper.fromMessageDTO(messageDTO, senderId));
-
-    // update the lastSentAt field in room document
-    roomRepository.updateLastMessageSentAt(message.getRoomId(), message.getTimestamp());
-    return message;
+    return messageRepository.save(messageMapper.fromMessageDTO(messageDTO, senderId));
   }
 
   @Override
-  public List<Message> getMessagesByRoomId(String roomId) {
+  public List<Message> getMessagesByRoomId(ObjectId roomId) {
     return messageRepository.findByRoomId(roomId, Sort.by(Sort.Direction.ASC, "timestamp"))
         .orElse(new ArrayList<>());
   }

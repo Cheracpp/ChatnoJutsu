@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -39,8 +38,7 @@ public class RoomServiceImpl implements RoomService {
 
   @Override
   public List<RoomDTO> getRoomsByUserId(String userId) {
-    List<Room> rooms = roomRepository.findByParticipantId(userId,
-        Sort.by(Sort.Direction.DESC, "lastMessageSentAt"));
+    List<Room> rooms = roomRepository.findByParticipantIdOrderedByLastMessage(userId);
     return rooms.stream().map(roomMapper::toRoomDTO).collect(Collectors.toList());
   }
 }

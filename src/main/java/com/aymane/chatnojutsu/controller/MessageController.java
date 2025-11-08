@@ -5,6 +5,7 @@ import com.aymane.chatnojutsu.model.Message;
 import com.aymane.chatnojutsu.service.MessageService;
 import java.security.Principal;
 import java.util.List;
+import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -30,7 +31,7 @@ public class MessageController {
   }
 
   @GetMapping("/messages/{roomId}")
-  public ResponseEntity<List<Message>> getRoomMessages(@PathVariable String roomId) {
+  public ResponseEntity<List<Message>> getRoomMessages(@PathVariable ObjectId roomId) {
     return ResponseEntity.ok(messageService.getMessagesByRoomId(roomId));
   }
 }

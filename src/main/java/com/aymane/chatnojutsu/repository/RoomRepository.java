@@ -1,23 +1,31 @@
 package com.aymane.chatnojutsu.repository;
 
 import com.aymane.chatnojutsu.model.Room;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
-import org.springframework.data.mongodb.repository.Update;
 
 public interface RoomRepository extends MongoRepository<Room, String> {
-
-  @Query("{'participants': ?0}")
-  List<Room> findByParticipantId(String userId, Sort sort);
 
   @Query("{ 'participants': { $all: ?0, $size: ?#{#participants.size()} } }")
   Optional<Room> findRoomWithExactParticipants(List<String> participants);
 
-  @Query("{'_id' : ?0}")
-  @Update("{$set : {'lastMessageSentAt' : ?1}}")
-  void updateLastMessageSentAt(String roomId, Instant lastMessageSentAt);
+  @Aggregation(pipeline = {"{ $match: { 'participants': ?0 } }", """
+      {
+        $lookup: {
+          from: 'messages',
+          let: { roomId: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$roomId', '$$roomId'] } } },
+            { $sort: { timestamp: -1 } },
+            { $limit: 1 }
+          ],
+          as: 'lastMessage'
+        }
+      }
+      """, "{ $unwind: { path: '$lastMessage', preserveNullAndEmptyArrays: false } }",
+      "{ $sort: { 'lastMessage.timestamp': -1 } }"})
+  List<Room> findByParticipantIdOrderedByLastMessage(String userId);
 }
