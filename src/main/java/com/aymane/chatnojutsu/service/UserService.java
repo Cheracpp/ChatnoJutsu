@@ -10,7 +10,7 @@ import java.util.Map;
  * Service interface for managing user-related operations.
  *
  * <p>This interface defines the contract for user management functionality including
- * user registration, friend management, and user retrieval operations.</p>
+ * user registration, and user retrieval operations.</p>
  */
 public interface UserService {
 
@@ -21,24 +21,6 @@ public interface UserService {
    * @return the newly created User entity
    */
   User registerNewUser(RegisterRequest registerRequest);
-
-  /**
-   * Adds a friend relationship between two users.
-   *
-   * @param loggedInUserId the ID of the currently logged-in user who wants to add a friend
-   * @param friendId       the ID of the user to be added as a friend
-   * @return the updated User entity of the logged-in user with the new friend added
-   */
-  User addFriend(String loggedInUserId, String friendId);
-
-  /**
-   * Removes a friend relationship between two users.
-   *
-   * @param loggedInUserId the ID of the currently logged-in user who wants to remove a friend
-   * @param friendId       the ID of the user to be removed from friends
-   * @return the updated User entity of the logged-in user with the friend removed
-   */
-  User removeFriend(String loggedInUserId, String friendId);
 
   /**
    * Retrieves all users in the system.

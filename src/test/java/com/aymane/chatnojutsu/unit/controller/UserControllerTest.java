@@ -4,8 +4,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -146,52 +144,6 @@ public class UserControllerTest {
   @Test
   public void getUsers_WithMissingQuery_ReturnsBadRequest() throws Exception {
     mockMvc.perform(get("/users/search")).andExpect(status().isBadRequest());
-  }
-
-  @Test
-  public void addFriend_WithValidFriendId_ReturnsSuccess() throws Exception {
-    String friendId = "2";
-    User updatedUser = new User();
-    updatedUser.setId(1L);
-
-    given(userRepository.findById(2L)).willReturn(java.util.Optional.of(new User()));
-    given(userService.addFriend(any(), any())).willReturn(updatedUser);
-
-    mockMvc.perform(post("/users/friends/{friendId}", friendId).with(user(mockUserDetails)))
-        .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.success").value(true))
-        .andExpect(jsonPath("$.message").value("User '1' is now friends with '2'."));
-
-    verify(userService).addFriend(null, friendId);
-  }
-
-  @Test
-  public void addFriend_WithInvalidFriendId_ReturnsBadRequest() throws Exception {
-    mockMvc.perform(post("/users/friends/{friendId}", "invalid-id").with(user(mockUserDetails)))
-        .andExpect(status().isBadRequest());
-  }
-
-  @Test
-  public void removeFriend_WithValidFriendId_ReturnsSuccess() throws Exception {
-    String friendId = "2";
-    User updatedUser = new User();
-    updatedUser.setId(1L);
-
-    given(userRepository.findById(2L)).willReturn(java.util.Optional.of(new User()));
-    given(userService.removeFriend(any(), any())).willReturn(updatedUser);
-
-    mockMvc.perform(delete("/users/friends/{friendId}", friendId).with(user(mockUserDetails)))
-        .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.success").value(true))
-        .andExpect(jsonPath("$.message").value("User '1' is no longer friends with '2'."));
-
-    verify(userService).removeFriend(null, friendId);
-  }
-
-  @Test
-  public void removeFriend_WithInvalidFriendId_ReturnsBadRequest() throws Exception {
-    mockMvc.perform(delete("/users/friends/{friendId}", "invalid-id").with(user(mockUserDetails)))
-        .andExpect(status().isBadRequest());
   }
 
   @Test
