@@ -3,11 +3,12 @@ package com.aymane.chatnojutsu.repository;
 import com.aymane.chatnojutsu.model.Room;
 import java.util.List;
 import java.util.Optional;
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
-public interface RoomRepository extends MongoRepository<Room, String> {
+public interface RoomRepository extends MongoRepository<Room, ObjectId> {
 
   @Query("{ 'participants': { $all: ?0, $size: ?#{#participants.size()} } }")
   Optional<Room> findRoomWithExactParticipants(List<String> participants);
@@ -28,4 +29,6 @@ public interface RoomRepository extends MongoRepository<Room, String> {
       """, "{ $unwind: { path: '$lastMessage', preserveNullAndEmptyArrays: false } }",
       "{ $sort: { 'lastMessage.timestamp': -1 } }"})
   List<Room> findByParticipantIdOrderedByLastMessage(String userId);
+
+  boolean existsByRoomIdAndParticipantsContaining(ObjectId id, String userId);
 }

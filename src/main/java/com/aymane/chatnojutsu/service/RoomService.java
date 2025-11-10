@@ -3,6 +3,7 @@ package com.aymane.chatnojutsu.service;
 import com.aymane.chatnojutsu.dto.RoomDTO;
 import com.aymane.chatnojutsu.model.Room;
 import java.util.List;
+import org.bson.types.ObjectId;
 
 /**
  * Service interface for managing chat room operations.
@@ -48,4 +49,17 @@ public interface RoomService {
    * list if the user has no rooms
    */
   List<RoomDTO> getRoomsByUserId(String userId);
+
+  /**
+   * Checks if a user is a participant in a specific room.
+   *
+   * <p>Verifies whether the specified user is listed as a participant in the room
+   * identified by the given room ID. This is typically used for authorization checks to ensure
+   * users can only access rooms they belong to.</p>
+   *
+   * @param roomId the unique identifier of the room to check
+   * @param userId the unique identifier of the user to verify
+   * @return true if the user is a participant in the room, false otherwise
+   */
+  boolean isUserParticipant(ObjectId roomId, String userId);
 }

@@ -8,7 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
-public interface MessageRepository extends MongoRepository<Message, String> {
+public interface MessageRepository extends MongoRepository<Message, ObjectId> {
 
   @Query("{ 'roomId': ?0}")
   Optional<List<Message>> findByRoomId(ObjectId roomId, Sort sort);
