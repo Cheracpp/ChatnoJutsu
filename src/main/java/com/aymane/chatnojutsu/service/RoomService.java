@@ -34,7 +34,7 @@ public interface RoomService {
    *                rooms
    * @return a RoomDTO containing the room ID and relevant room information
    */
-  RoomDTO getRoomId(RoomDTO roomDTO);
+  RoomDTO findOrCreateRoom(RoomDTO roomDTO);
 
   /**
    * Retrieves all chat rooms associated with a specific user.

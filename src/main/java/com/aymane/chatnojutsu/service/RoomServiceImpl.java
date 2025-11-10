@@ -29,7 +29,7 @@ public class RoomServiceImpl implements RoomService {
   }
 
   @Override
-  public RoomDTO getRoomId(RoomDTO roomDTO) {
+  public RoomDTO findOrCreateRoom(RoomDTO roomDTO) {
     List<String> participants = roomDTO.participants();
     Optional<Room> optionalRoom = roomRepository.findRoomWithExactParticipants(participants);
     Room room = optionalRoom.orElseGet(() -> save(roomDTO));

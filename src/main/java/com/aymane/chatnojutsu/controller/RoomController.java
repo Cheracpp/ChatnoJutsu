@@ -26,14 +26,13 @@ public class RoomController {
   }
 
   @PostMapping
-  public ResponseEntity<RoomDTO> getOrCreateRoomId(@Valid @RequestBody RoomDTO roomDTO) {
-    RoomDTO room = roomService.getRoomId(roomDTO);
+  public ResponseEntity<RoomDTO> findOrCreateRoom(@Valid @RequestBody RoomDTO roomDTO) {
+    RoomDTO room = roomService.findOrCreateRoom(roomDTO);
     return ResponseEntity.ok(room);
   }
 
   @GetMapping
-  public ResponseEntity<List<RoomDTO>> getUserChats(
-      @AuthenticationPrincipal UserDetails userDetails) {
+  public ResponseEntity<List<RoomDTO>> getRooms(@AuthenticationPrincipal UserDetails userDetails) {
     List<RoomDTO> roomsByUserId = roomService.getRoomsByUserId(userDetails.getUsername());
     return ResponseEntity.ok(roomsByUserId);
   }
