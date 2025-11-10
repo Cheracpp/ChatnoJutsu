@@ -1,4 +1,4 @@
-package com.aymane.chatnojutsu.unit.controller;
+package com.aymane.chatnojutsu.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -12,7 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.aymane.chatnojutsu.config.CustomUserDetails;
-import com.aymane.chatnojutsu.controller.UserController;
 import com.aymane.chatnojutsu.dto.RegisterRequest;
 import com.aymane.chatnojutsu.dto.UserDTO;
 import com.aymane.chatnojutsu.model.User;
