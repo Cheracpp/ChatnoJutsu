@@ -69,10 +69,10 @@ public class UserControllerTest {
   public void createNewUser_WithValidInput_ReturnsCreatedAndLocation() throws Exception {
     given(userService.registerNewUser(any(RegisterRequest.class))).willReturn(testUser);
 
-    mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
+    mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(validRegisterRequest)))
         .andExpect(status().isCreated())
-        .andExpect(header().string("Location", "http://localhost/users/1"));
+        .andExpect(header().string("Location", "http://localhost/api/users/1"));
 
     verify(userService).registerNewUser(any(RegisterRequest.class));
   }
@@ -81,7 +81,7 @@ public class UserControllerTest {
   public void createNewUser_WithInvalidInput_ReturnsBadRequest() throws Exception {
     RegisterRequest invalidRequest = new RegisterRequest("", "", "");
 
-    mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
+    mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidRequest)))
         .andExpect(status().isBadRequest());
   }
@@ -95,7 +95,7 @@ public class UserControllerTest {
 
     given(userService.getAllUsers()).willReturn(users);
 
-    mockMvc.perform(get("/users")).andExpect(status().isOk())
+    mockMvc.perform(get("/api/users")).andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.length()").value(3)).andExpect(jsonPath("$[0].id").value("1"))
         .andExpect(jsonPath("$[0].username").value("user1"))
@@ -109,7 +109,7 @@ public class UserControllerTest {
   public void getAllUsers_WhenNoUsers_ReturnsEmptyList() throws Exception {
     given(userService.getAllUsers()).willReturn(Collections.emptyList());
 
-    mockMvc.perform(get("/users")).andExpect(status().isOk())
+    mockMvc.perform(get("/api/users")).andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.length()").value(0));
 
@@ -123,7 +123,7 @@ public class UserControllerTest {
 
     given(userService.getUsersByQuery(query)).willReturn(matchingUsers);
 
-    mockMvc.perform(get("/users/search").param("query", query)).andExpect(status().isOk())
+    mockMvc.perform(get("/api/users/search").param("query", query)).andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].id").value("1"))
         .andExpect(jsonPath("$[0].username").value("testuser"));
@@ -133,17 +133,19 @@ public class UserControllerTest {
 
   @Test
   public void getUsers_WithShortQuery_ReturnsBadRequest() throws Exception {
-    mockMvc.perform(get("/users/search").param("query", "ab")).andExpect(status().isBadRequest());
+    mockMvc.perform(get("/api/users/search").param("query", "ab"))
+        .andExpect(status().isBadRequest());
   }
 
   @Test
   public void getUsers_WithBlankQuery_ReturnsBadRequest() throws Exception {
-    mockMvc.perform(get("/users/search").param("query", "   ")).andExpect(status().isBadRequest());
+    mockMvc.perform(get("/api/users/search").param("query", "   "))
+        .andExpect(status().isBadRequest());
   }
 
   @Test
   public void getUsers_WithMissingQuery_ReturnsBadRequest() throws Exception {
-    mockMvc.perform(get("/users/search")).andExpect(status().isBadRequest());
+    mockMvc.perform(get("/api/users/search")).andExpect(status().isBadRequest());
   }
 
   @Test
@@ -156,7 +158,7 @@ public class UserControllerTest {
 
     given(userService.getUsersByIds(anyList())).willReturn(usersMap);
 
-    mockMvc.perform(post("/users/details").contentType(MediaType.APPLICATION_JSON)
+    mockMvc.perform(post("/api/users/details").contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(userIds))).andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.['1'].username").value("user1"))
@@ -173,7 +175,7 @@ public class UserControllerTest {
 
     given(userService.getUsersByIds(anyList())).willReturn(emptyMap);
 
-    mockMvc.perform(post("/users/details").contentType(MediaType.APPLICATION_JSON)
+    mockMvc.perform(post("/api/users/details").contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(emptyList))).andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$").isEmpty());

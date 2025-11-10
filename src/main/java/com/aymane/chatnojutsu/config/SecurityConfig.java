@@ -1,7 +1,10 @@
 package com.aymane.chatnojutsu.config;
 
-import com.aymane.chatnojutsu.service.JwtService;
+import static jakarta.servlet.DispatcherType.ERROR;
+import static jakarta.servlet.DispatcherType.FORWARD;
+
 import com.aymane.chatnojutsu.service.CsrfService;
+import com.aymane.chatnojutsu.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,9 +24,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import static jakarta.servlet.DispatcherType.ERROR;
-import static jakarta.servlet.DispatcherType.FORWARD;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -34,8 +34,7 @@ public class SecurityConfig {
   private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
   @Autowired
-  public SecurityConfig(JwtService jwtService,
-      CsrfService csrfService,
+  public SecurityConfig(JwtService jwtService, CsrfService csrfService,
       UserDetailsServiceImpl userDetailsService,
       JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
     this.jwtService = jwtService;
@@ -45,10 +44,10 @@ public class SecurityConfig {
   }
 
   @Bean
-  public AuthenticationManager authenticationManager(
-      UserDetailsService userDetailsService,
+  public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
       PasswordEncoder passwordEncoder) {
-    DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(userDetailsService);
+    DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(
+        userDetailsService);
     authenticationProvider.setPasswordEncoder(passwordEncoder);
 
     return new ProviderManager(authenticationProvider);
@@ -64,32 +63,21 @@ public class SecurityConfig {
     JwtFilter jwtFilter = new JwtFilter(jwtService, userDetailsService);
     CsrfFilter csrfFilter = new CsrfFilter(csrfService);
 
-    httpSecurity
-        .headers(headers ->
-            headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::deny))
+    httpSecurity.headers(
+            headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::deny))
         .cors(AbstractHttpConfigurer::disable)
         .csrf(AbstractHttpConfigurer::disable)  // Using custom CSRF filter
-        .formLogin(AbstractHttpConfigurer::disable)
-        .authorizeHttpRequests(authorizeRequests ->
-            authorizeRequests
-                .requestMatchers(HttpMethod.POST, "/users", "/auth/login").permitAll()
-                .dispatcherTypeMatchers(FORWARD, ERROR).permitAll()
-                .requestMatchers("/login").permitAll()
-                .requestMatchers("/register").permitAll()
-                .requestMatchers("/resources/**").permitAll()
-                .requestMatchers("/static/**").permitAll()
-                .requestMatchers("/templates/*").permitAll()
-                .requestMatchers("/css/*").permitAll()
-                .requestMatchers("/images/*").permitAll()
-                .requestMatchers("/javascript/*").permitAll()
-                .anyRequest().authenticated()
-        )
-        .sessionManagement(session ->
-            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        )
+        .formLogin(AbstractHttpConfigurer::disable).authorizeHttpRequests(
+            authorizeRequests -> authorizeRequests.requestMatchers(HttpMethod.POST, "/api/users",
+                    "/auth/login").permitAll().dispatcherTypeMatchers(FORWARD, ERROR).permitAll()
+                .requestMatchers("/login").permitAll().requestMatchers("/register").permitAll()
+                .requestMatchers("/resources/**").permitAll().requestMatchers("/static/**").permitAll()
+                .requestMatchers("/templates/*").permitAll().requestMatchers("/css/*").permitAll()
+                .requestMatchers("/images/*").permitAll().requestMatchers("/javascript/*").permitAll()
+                .anyRequest().authenticated()).sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .exceptionHandling(
-            ex -> ex.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
-        )
+            ex -> ex.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterAfter(csrfFilter, JwtFilter.class);
 

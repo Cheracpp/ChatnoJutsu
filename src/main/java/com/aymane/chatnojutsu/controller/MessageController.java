@@ -23,14 +23,14 @@ public class MessageController {
     this.messageService = messageService;
   }
 
-  @MessageMapping("/chat")
+  @MessageMapping("/messages")
   public void processMessage(@Payload MessageDTO messageDTO, Principal principal) {
     String userId = principal.getName();
     messageService.save(messageDTO, userId);
     messageService.sendMessage(messageDTO, userId);
   }
 
-  @GetMapping("/messages/{roomId}")
+  @GetMapping("/api/rooms/{roomId}/messages")
   public ResponseEntity<List<Message>> getRoomMessages(@PathVariable ObjectId roomId) {
     return ResponseEntity.ok(messageService.getMessagesByRoomId(roomId));
   }

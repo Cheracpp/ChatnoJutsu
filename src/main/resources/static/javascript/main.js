@@ -60,7 +60,7 @@ function onConnected() {
 }
 
 async function fetchAndDisplayUsers() {
-  const roomsResponse = await fetch(`/rooms`, {
+  const roomsResponse = await fetch(`/api/rooms`, {
     method: 'GET',
     headers: createAuthHeaders()
   });
@@ -83,7 +83,7 @@ async function fetchAndDisplayUsers() {
   }
 
   // fetch for users' details
-  const usersDetailsResponse = await fetch("users/details", {
+  const usersDetailsResponse = await fetch("/api/users/details", {
     method: 'POST',
     headers: createAuthHeaders(),
     body: JSON.stringify(users)
@@ -180,10 +180,11 @@ function displayMessage(senderId, content) {
 }
 
 async function fetchAndDisplayUserChat() {
-  const userChatResponse = await fetch(`/messages/${selectedRoomId}`, {
-    method: 'GET',
-    headers: createAuthHeaders()
-  });
+  const userChatResponse = await fetch(`/api/rooms/${selectedRoomId}/messages`,
+      {
+        method: 'GET',
+        headers: createAuthHeaders()
+      });
   const userChat = await userChatResponse.json();
   chatMessagesSpace.innerHTML = '';
   userChat.forEach(message => {
@@ -206,7 +207,7 @@ function sendMessage(event) {
       senderId: currentUser.id,
       content: messageContent,
     };
-    stompClient.send("/app/chat", {}, JSON.stringify(Message));
+    stompClient.send("/app/messages", {}, JSON.stringify(Message));
     displayMessage(currentUser.id, messageContent);
     messageInput.value = '';
   }
@@ -256,7 +257,7 @@ async function getUsers() {
   if (searchContent) {
     try {
       const usersResponse = await fetch(
-          `/users/search?query=${searchContent}`, {
+          `/api/users/search?query=${searchContent}`, {
             method: 'GET',
             headers: createAuthHeaders()
           });
@@ -374,7 +375,7 @@ async function getRoom(selectedUserId) {
     type: "direct",
     participants: [selectedUserId, currentUser.id],
   }
-  let roomResponse = await fetch("/room", {
+  let roomResponse = await fetch("/api/rooms", {
     method: 'POST',
     headers: createAuthHeaders(),
     body: JSON.stringify(Room)
