@@ -1,7 +1,7 @@
 package com.aymane.chatnojutsu.controller;
 
 import com.aymane.chatnojutsu.dto.RoomDTO;
-import com.aymane.chatnojutsu.service.RoomServiceImpl;
+import com.aymane.chatnojutsu.service.RoomService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/rooms")
 public class RoomController {
 
-  RoomServiceImpl roomService;
+  RoomService roomService;
 
   @Autowired
-  public RoomController(RoomServiceImpl roomService) {
+  public RoomController(RoomService roomService) {
     this.roomService = roomService;
   }
 
