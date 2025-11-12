@@ -49,11 +49,21 @@ public class MessageControllerTest {
     ObjectId messageId2 = new ObjectId();
     Instant now = Instant.now();
 
-    Message message1 = Message.builder().messageId(messageId1).roomId(roomId).senderId("user1")
-        .content("Hello").timestamp(now).build();
+    Message message1 = Message.builder()
+                              .messageId(messageId1)
+                              .roomId(roomId)
+                              .senderId("user1")
+                              .content("Hello")
+                              .timestamp(now)
+                              .build();
 
-    Message message2 = Message.builder().messageId(messageId2).roomId(roomId).senderId("user2")
-        .content("Hi there").timestamp(now.plusSeconds(10)).build();
+    Message message2 = Message.builder()
+                              .messageId(messageId2)
+                              .roomId(roomId)
+                              .senderId("user2")
+                              .content("Hi there")
+                              .timestamp(now.plusSeconds(10))
+                              .build();
 
     List<Message> messages = List.of(message1, message2);
 
@@ -61,16 +71,17 @@ public class MessageControllerTest {
     given(messageService.getMessagesByRoomId(roomId)).willReturn(messages);
 
     mockMvc.perform(get("/api/rooms/{roomId}/messages", roomId.toHexString()))
-        .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$", hasSize(2)))
-        .andExpect(jsonPath("$[0].messageId.timestamp").exists())
-        .andExpect(jsonPath("$[0].roomId.timestamp").exists())
-        .andExpect(jsonPath("$[0].senderId", is("user1")))
-        .andExpect(jsonPath("$[0].content", is("Hello")))
-        .andExpect(jsonPath("$[1].messageId.timestamp").exists())
-        .andExpect(jsonPath("$[1].roomId.timestamp").exists())
-        .andExpect(jsonPath("$[1].senderId", is("user2")))
-        .andExpect(jsonPath("$[1].content", is("Hi there")));
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(jsonPath("$", hasSize(2)))
+           .andExpect(jsonPath("$[0].messageId.timestamp").exists())
+           .andExpect(jsonPath("$[0].roomId.timestamp").exists())
+           .andExpect(jsonPath("$[0].senderId", is("user1")))
+           .andExpect(jsonPath("$[0].content", is("Hello")))
+           .andExpect(jsonPath("$[1].messageId.timestamp").exists())
+           .andExpect(jsonPath("$[1].roomId.timestamp").exists())
+           .andExpect(jsonPath("$[1].senderId", is("user2")))
+           .andExpect(jsonPath("$[1].content", is("Hi there")));
 
     verify(roomService).isUserParticipant(roomId, "testUser");
     verify(messageService).getMessagesByRoomId(roomId);
@@ -84,7 +95,7 @@ public class MessageControllerTest {
     given(roomService.isUserParticipant(roomId, "testUser")).willReturn(false);
 
     mockMvc.perform(get("/api/rooms/{roomId}/messages", roomId.toHexString()))
-        .andExpect(status().isForbidden());
+           .andExpect(status().isForbidden());
 
     verify(roomService).isUserParticipant(roomId, "testUser");
     verifyNoInteractions(messageService);
@@ -95,7 +106,7 @@ public class MessageControllerTest {
     ObjectId roomId = new ObjectId();
 
     mockMvc.perform(get("/api/rooms/{roomId}/messages", roomId.toHexString()))
-        .andExpect(status().isUnauthorized());
+           .andExpect(status().isUnauthorized());
 
     verifyNoInteractions(roomService);
     verifyNoInteractions(messageService);
@@ -110,8 +121,9 @@ public class MessageControllerTest {
     given(messageService.getMessagesByRoomId(roomId)).willReturn(Collections.emptyList());
 
     mockMvc.perform(get("/api/rooms/{roomId}/messages", roomId.toHexString()))
-        .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$", hasSize(0)));
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(jsonPath("$", hasSize(0)));
 
     verify(roomService).isUserParticipant(roomId, "testUser");
     verify(messageService).getMessagesByRoomId(roomId);
@@ -123,7 +135,7 @@ public class MessageControllerTest {
     String invalidRoomId = "invalid-id";
 
     mockMvc.perform(get("/api/rooms/{roomId}/messages", invalidRoomId))
-        .andExpect(status().isBadRequest());
+           .andExpect(status().isBadRequest());
 
     verifyNoInteractions(roomService);
     verifyNoInteractions(messageService);
@@ -138,7 +150,7 @@ public class MessageControllerTest {
     given(messageService.getMessagesByRoomId(roomId)).willReturn(Collections.emptyList());
 
     mockMvc.perform(get("/api/rooms/{roomId}/messages", roomId.toHexString()))
-        .andExpect(status().isOk());
+           .andExpect(status().isOk());
 
     verify(roomService).isUserParticipant(roomId, "testUser");
     verify(messageService).getMessagesByRoomId(roomId);
@@ -153,7 +165,7 @@ public class MessageControllerTest {
     given(messageService.getMessagesByRoomId(roomId)).willReturn(Collections.emptyList());
 
     mockMvc.perform(get("/api/rooms/{roomId}/messages", roomId.toHexString()))
-        .andExpect(status().isOk());
+           .andExpect(status().isOk());
 
     verify(roomService).isUserParticipant(roomId, "user1");
     verify(messageService).getMessagesByRoomId(roomId);
@@ -165,22 +177,39 @@ public class MessageControllerTest {
     ObjectId roomId = new ObjectId();
     Instant baseTime = Instant.now();
 
-    List<Message> messages = List.of(
-        Message.builder().messageId(new ObjectId()).roomId(roomId).senderId("user1")
-            .content("First message").timestamp(baseTime).build(),
-        Message.builder().messageId(new ObjectId()).roomId(roomId).senderId("user2")
-            .content("Second message").timestamp(baseTime.plusSeconds(5)).build(),
-        Message.builder().messageId(new ObjectId()).roomId(roomId).senderId("user1")
-            .content("Third message").timestamp(baseTime.plusSeconds(10)).build());
+    List<Message> messages = List.of(Message.builder()
+                                            .messageId(new ObjectId())
+                                            .roomId(roomId)
+                                            .senderId("user1")
+                                            .content("First message")
+                                            .timestamp(baseTime)
+                                            .build(), Message.builder()
+                                                             .messageId(new ObjectId())
+                                                             .roomId(roomId)
+                                                             .senderId("user2")
+                                                             .content("Second message")
+                                                             .timestamp(baseTime.plusSeconds(5))
+                                                             .build(), Message.builder()
+                                                                              .messageId(
+                                                                                  new ObjectId())
+                                                                              .roomId(roomId)
+                                                                              .senderId("user1")
+                                                                              .content(
+                                                                                  "Third message")
+                                                                              .timestamp(
+                                                                                  baseTime.plusSeconds(
+                                                                                      10))
+                                                                              .build());
 
     given(roomService.isUserParticipant(roomId, "testUser")).willReturn(true);
     given(messageService.getMessagesByRoomId(roomId)).willReturn(messages);
 
     mockMvc.perform(get("/api/rooms/{roomId}/messages", roomId.toHexString()))
-        .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(3)))
-        .andExpect(jsonPath("$[0].content", is("First message")))
-        .andExpect(jsonPath("$[1].content", is("Second message")))
-        .andExpect(jsonPath("$[2].content", is("Third message")));
+           .andExpect(status().isOk())
+           .andExpect(jsonPath("$", hasSize(3)))
+           .andExpect(jsonPath("$[0].content", is("First message")))
+           .andExpect(jsonPath("$[1].content", is("Second message")))
+           .andExpect(jsonPath("$[2].content", is("Third message")));
 
     verify(roomService).isUserParticipant(roomId, "testUser");
     verify(messageService).getMessagesByRoomId(roomId);
@@ -249,9 +278,13 @@ public class MessageControllerTest {
         "user1", "Test");
     Principal principal = () -> "user1";
     ObjectId savedMessageId = new ObjectId();
-    Message savedMessage = Message.builder().messageId(savedMessageId)
-        .roomId(new ObjectId("507f1f77bcf86cd799439011")).senderId("user1").content("Test")
-        .timestamp(Instant.now()).build();
+    Message savedMessage = Message.builder()
+                                  .messageId(savedMessageId)
+                                  .roomId(new ObjectId("507f1f77bcf86cd799439011"))
+                                  .senderId("user1")
+                                  .content("Test")
+                                  .timestamp(Instant.now())
+                                  .build();
 
     given(messageService.save(any(MessageDTO.class), eq("user1"))).willReturn(savedMessage);
 

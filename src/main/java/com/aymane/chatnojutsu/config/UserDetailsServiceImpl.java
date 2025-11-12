@@ -24,15 +24,16 @@ public class UserDetailsServiceImpl implements UserDetailsService {
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     User user = userRepository.findByUsername(username)
-        .orElseThrow(
-            () -> new UsernameNotFoundException("User not found with username: " + username));
+                              .orElseThrow(() -> new UsernameNotFoundException(
+                                  "User not found with username: " + username));
     return userMapper.toCustomUserDetails(user);
   }
 
   public UserDetails loadUserById(String Id) throws UsernameNotFoundException {
     Long userId = Long.parseLong(Id);
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + Id));
+                              .orElseThrow(() -> new UsernameNotFoundException(
+                                  "User not found with id: " + Id));
     return userMapper.toCustomUserDetails(user);
   }
 }

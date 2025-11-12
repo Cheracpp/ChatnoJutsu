@@ -36,10 +36,13 @@ public class UserController {
   @PostMapping
   public ResponseEntity<URI> createNewUser(@Valid @RequestBody RegisterRequest registerRequest) {
     User createdUser = userService.registerNewUser(registerRequest);
-    URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-        .buildAndExpand(createdUser.getId()).toUri();
+    URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                                              .path("/{id}")
+                                              .buildAndExpand(createdUser.getId())
+                                              .toUri();
 
-    return ResponseEntity.created(location).build();
+    return ResponseEntity.created(location)
+                         .build();
   }
 
   @GetMapping

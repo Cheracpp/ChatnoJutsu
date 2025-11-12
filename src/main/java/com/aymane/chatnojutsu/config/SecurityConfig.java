@@ -64,22 +64,40 @@ public class SecurityConfig {
     CsrfFilter csrfFilter = new CsrfFilter(csrfService);
 
     httpSecurity.headers(
-            headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::deny))
-        .cors(AbstractHttpConfigurer::disable)
-        .csrf(AbstractHttpConfigurer::disable)  // Using custom CSRF filter
-        .formLogin(AbstractHttpConfigurer::disable).authorizeHttpRequests(
-            authorizeRequests -> authorizeRequests.requestMatchers(HttpMethod.POST, "/api/users",
-                    "/auth/login").permitAll().dispatcherTypeMatchers(FORWARD, ERROR).permitAll()
-                .requestMatchers("/login").permitAll().requestMatchers("/register").permitAll()
-                .requestMatchers("/resources/**").permitAll().requestMatchers("/static/**").permitAll()
-                .requestMatchers("/templates/*").permitAll().requestMatchers("/css/*").permitAll()
-                .requestMatchers("/images/*").permitAll().requestMatchers("/javascript/*").permitAll()
-                .anyRequest().authenticated()).sessionManagement(
-            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .exceptionHandling(
-            ex -> ex.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
-        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-        .addFilterAfter(csrfFilter, JwtFilter.class);
+                    headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::deny))
+                .cors(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)  // Using custom CSRF filter
+                .formLogin(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(
+                    authorizeRequests -> authorizeRequests.requestMatchers(HttpMethod.POST,
+                                                              "/api/users", "/auth/login")
+                                                          .permitAll()
+                                                          .dispatcherTypeMatchers(FORWARD, ERROR)
+                                                          .permitAll()
+                                                          .requestMatchers("/login")
+                                                          .permitAll()
+                                                          .requestMatchers("/register")
+                                                          .permitAll()
+                                                          .requestMatchers("/resources/**")
+                                                          .permitAll()
+                                                          .requestMatchers("/static/**")
+                                                          .permitAll()
+                                                          .requestMatchers("/templates/*")
+                                                          .permitAll()
+                                                          .requestMatchers("/css/*")
+                                                          .permitAll()
+                                                          .requestMatchers("/images/*")
+                                                          .permitAll()
+                                                          .requestMatchers("/javascript/*")
+                                                          .permitAll()
+                                                          .anyRequest()
+                                                          .authenticated())
+                .sessionManagement(
+                    session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(
+                    new LoginUrlAuthenticationEntryPoint("/login")))
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(csrfFilter, JwtFilter.class);
 
     return httpSecurity.build();
   }

@@ -47,33 +47,48 @@ public class AuthenticationController {
         loginRequest.username(), loginRequest.password());
     Authentication authenticationResponse = this.authenticationManager.authenticate(
         authenticationRequest);
-    SecurityContextHolder.getContext().setAuthentication(authenticationResponse);
+    SecurityContextHolder.getContext()
+                         .setAuthentication(authenticationResponse);
 
     Object principal = authenticationResponse.getPrincipal();
     CustomUserDetails userDetails = (CustomUserDetails) principal;
 
     String jwt = this.jwtService.createToken(userDetails.getUsername());
-    ResponseCookie jwtCookie = ResponseCookie.from("accessToken", jwt).httpOnly(true).secure(true)
-        .sameSite("Lax").path("/").maxAge(cookieExpiry).build();
+    ResponseCookie jwtCookie = ResponseCookie.from("accessToken", jwt)
+                                             .httpOnly(true)
+                                             .secure(true)
+                                             .sameSite("Lax")
+                                             .path("/")
+                                             .maxAge(cookieExpiry)
+                                             .build();
 
     String csrfToken = this.csrfService.generateCsrfToken();
     ResponseCookie csrfCookie = csrfService.createCsrfCookie(csrfToken);
 
-    return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-        .header(HttpHeaders.SET_COOKIE, csrfCookie.toString()).build();
+    return ResponseEntity.ok()
+                         .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                         .header(HttpHeaders.SET_COOKIE, csrfCookie.toString())
+                         .build();
   }
 
 
   @PostMapping("/logout")
   public ResponseEntity<?> unauthenticateUser() {
     // Create expired JWT cookie
-    ResponseCookie jwtCookie = ResponseCookie.from("accessToken", "").httpOnly(true).secure(true)
-        .sameSite("Lax").path("/").maxAge(cookieExpired).build();
+    ResponseCookie jwtCookie = ResponseCookie.from("accessToken", "")
+                                             .httpOnly(true)
+                                             .secure(true)
+                                             .sameSite("Lax")
+                                             .path("/")
+                                             .maxAge(cookieExpired)
+                                             .build();
 
     // Create expired CSRF cookie
     ResponseCookie csrfCookie = csrfService.createExpiredCsrfCookie();
 
-    return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-        .header(HttpHeaders.SET_COOKIE, csrfCookie.toString()).build();
+    return ResponseEntity.ok()
+                         .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                         .header(HttpHeaders.SET_COOKIE, csrfCookie.toString())
+                         .build();
   }
 }

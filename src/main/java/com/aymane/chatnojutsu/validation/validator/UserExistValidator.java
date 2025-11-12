@@ -19,12 +19,14 @@ public class UserExistValidator implements ConstraintValidator<UserExist, String
 
   @Override
   public boolean isValid(String id, ConstraintValidatorContext context) {
-    if (id == null || id.trim().isEmpty()) {
+    if (id == null || id.trim()
+                        .isEmpty()) {
       return true;
     }
     try {
       Long numericId = Long.parseLong(id);
-      return userRepository.findById(numericId).isPresent();
+      return userRepository.findById(numericId)
+                           .isPresent();
     } catch (NumberFormatException e) {
       log.info("Failed converting {} to Long", id);
       return false;

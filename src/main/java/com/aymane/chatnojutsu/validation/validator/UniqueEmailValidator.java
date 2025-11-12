@@ -17,7 +17,8 @@ public class UniqueEmailValidator implements ConstraintValidator<UniqueEmail, St
 
   @Override
   public boolean isValid(String value, ConstraintValidatorContext context) {
-    if (value == null || value.trim().isEmpty()) {
+    if (value == null || value.trim()
+                              .isEmpty()) {
       return true;
     }
 

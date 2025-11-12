@@ -69,9 +69,10 @@ public class UserControllerTest {
     given(userService.registerNewUser(any(RegisterRequest.class))).willReturn(testUser);
 
     mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(validRegisterRequest)))
-        .andExpect(status().isCreated())
-        .andExpect(header().string("Location", "http://localhost/api/users/1"));
+                                      .content(
+                                          objectMapper.writeValueAsString(validRegisterRequest)))
+           .andExpect(status().isCreated())
+           .andExpect(header().string("Location", "http://localhost/api/users/1"));
 
     verify(userService).registerNewUser(any(RegisterRequest.class));
   }
@@ -81,8 +82,8 @@ public class UserControllerTest {
     RegisterRequest invalidRequest = new RegisterRequest("", "", "");
 
     mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(invalidRequest)))
-        .andExpect(status().isBadRequest());
+                                      .content(objectMapper.writeValueAsString(invalidRequest)))
+           .andExpect(status().isBadRequest());
   }
 
   @Test
@@ -94,12 +95,15 @@ public class UserControllerTest {
 
     given(userService.getAllUsers()).willReturn(users);
 
-    mockMvc.perform(get("/api/users")).andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.length()").value(3)).andExpect(jsonPath("$[0].id").value("1"))
-        .andExpect(jsonPath("$[0].username").value("user1"))
-        .andExpect(jsonPath("$[0].email").value("user1@example.com"))
-        .andExpect(jsonPath("$[1].id").value("2")).andExpect(jsonPath("$[2].id").value("3"));
+    mockMvc.perform(get("/api/users"))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(jsonPath("$.length()").value(3))
+           .andExpect(jsonPath("$[0].id").value("1"))
+           .andExpect(jsonPath("$[0].username").value("user1"))
+           .andExpect(jsonPath("$[0].email").value("user1@example.com"))
+           .andExpect(jsonPath("$[1].id").value("2"))
+           .andExpect(jsonPath("$[2].id").value("3"));
 
     verify(userService).getAllUsers();
   }
@@ -108,9 +112,10 @@ public class UserControllerTest {
   public void getAllUsers_WhenNoUsers_ReturnsEmptyList() throws Exception {
     given(userService.getAllUsers()).willReturn(Collections.emptyList());
 
-    mockMvc.perform(get("/api/users")).andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.length()").value(0));
+    mockMvc.perform(get("/api/users"))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(jsonPath("$.length()").value(0));
 
     verify(userService).getAllUsers();
   }
@@ -122,10 +127,12 @@ public class UserControllerTest {
 
     given(userService.getUsersByQuery(query)).willReturn(matchingUsers);
 
-    mockMvc.perform(get("/api/users/search").param("query", query)).andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].id").value("1"))
-        .andExpect(jsonPath("$[0].username").value("testuser"));
+    mockMvc.perform(get("/api/users/search").param("query", query))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(jsonPath("$.length()").value(1))
+           .andExpect(jsonPath("$[0].id").value("1"))
+           .andExpect(jsonPath("$[0].username").value("testuser"));
 
     verify(userService).getUsersByQuery(query);
   }
@@ -133,18 +140,19 @@ public class UserControllerTest {
   @Test
   public void getUsers_WithShortQuery_ReturnsBadRequest() throws Exception {
     mockMvc.perform(get("/api/users/search").param("query", "ab"))
-        .andExpect(status().isBadRequest());
+           .andExpect(status().isBadRequest());
   }
 
   @Test
   public void getUsers_WithBlankQuery_ReturnsBadRequest() throws Exception {
     mockMvc.perform(get("/api/users/search").param("query", "   "))
-        .andExpect(status().isBadRequest());
+           .andExpect(status().isBadRequest());
   }
 
   @Test
   public void getUsers_WithMissingQuery_ReturnsBadRequest() throws Exception {
-    mockMvc.perform(get("/api/users/search")).andExpect(status().isBadRequest());
+    mockMvc.perform(get("/api/users/search"))
+           .andExpect(status().isBadRequest());
   }
 
   @Test
@@ -158,11 +166,12 @@ public class UserControllerTest {
     given(userService.getUsersByIds(anyList())).willReturn(usersMap);
 
     mockMvc.perform(post("/api/users/details").contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(userIds))).andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.['1'].username").value("user1"))
-        .andExpect(jsonPath("$.['2'].username").value("user2"))
-        .andExpect(jsonPath("$.['3'].username").value("user3"));
+                                              .content(objectMapper.writeValueAsString(userIds)))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(jsonPath("$.['1'].username").value("user1"))
+           .andExpect(jsonPath("$.['2'].username").value("user2"))
+           .andExpect(jsonPath("$.['3'].username").value("user3"));
 
     verify(userService).getUsersByIds(anyList());
   }
@@ -175,9 +184,10 @@ public class UserControllerTest {
     given(userService.getUsersByIds(anyList())).willReturn(emptyMap);
 
     mockMvc.perform(post("/api/users/details").contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(emptyList))).andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$").isEmpty());
+                                              .content(objectMapper.writeValueAsString(emptyList)))
+           .andExpect(status().isOk())
+           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+           .andExpect(jsonPath("$").isEmpty());
 
     verify(userService).getUsersByIds(anyList());
   }

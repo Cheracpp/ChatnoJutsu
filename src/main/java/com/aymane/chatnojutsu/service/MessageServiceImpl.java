@@ -37,7 +37,7 @@ public class MessageServiceImpl implements MessageService {
   @Override
   public List<Message> getMessagesByRoomId(ObjectId roomId) {
     return messageRepository.findByRoomId(roomId, Sort.by(Sort.Direction.ASC, "timestamp"))
-        .orElse(new ArrayList<>());
+                            .orElse(new ArrayList<>());
   }
 
   @Override

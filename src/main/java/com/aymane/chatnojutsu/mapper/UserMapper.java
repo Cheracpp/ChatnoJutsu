@@ -15,11 +15,7 @@ import org.mapstruct.ReportingPolicy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-@Mapper(
-    componentModel = ComponentModel.SPRING,
-    unmappedTargetPolicy = ReportingPolicy.IGNORE,
-    unmappedSourcePolicy = ReportingPolicy.IGNORE
-)
+@Mapper(componentModel = ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.IGNORE, unmappedSourcePolicy = ReportingPolicy.IGNORE)
 public interface UserMapper {
 
   User fromRegisterRequest(RegisterRequest registerRequest);

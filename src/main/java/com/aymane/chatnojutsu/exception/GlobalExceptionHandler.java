@@ -40,7 +40,8 @@ public class GlobalExceptionHandler {
     Locale locale = LocaleContextHolder.getLocale();
     String errorMessage = messageSource.getMessage("error.request.body.missing", null, locale);
     error.put("error", errorMessage);
-    return ResponseEntity.badRequest().body(error);
+    return ResponseEntity.badRequest()
+                         .body(error);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -49,20 +50,22 @@ public class GlobalExceptionHandler {
 
     List<Map<String, String>> errorDetails = new ArrayList<>();
 
-    ex.getBindingResult().getAllErrors().forEach((error) -> {
-      if (error instanceof FieldError) {
-        Map<String, String> errorDetail = new HashMap<>();
-        String fieldName = ((FieldError) error).getField();
-        String errorMessage = error.getDefaultMessage();
+    ex.getBindingResult()
+      .getAllErrors()
+      .forEach((error) -> {
+        if (error instanceof FieldError) {
+          Map<String, String> errorDetail = new HashMap<>();
+          String fieldName = ((FieldError) error).getField();
+          String errorMessage = error.getDefaultMessage();
 
-        String errorCode = error.getCode();
+          String errorCode = error.getCode();
 
-        errorDetail.put("field", fieldName);
-        errorDetail.put("errorCode", errorCode);
-        errorDetail.put("errorMessage", errorMessage);
-        errorDetails.add(errorDetail);
-      }
-    });
+          errorDetail.put("field", fieldName);
+          errorDetail.put("errorCode", errorCode);
+          errorDetail.put("errorMessage", errorMessage);
+          errorDetails.add(errorDetail);
+        }
+      });
 
     Map<String, List<Map<String, String>>> response = new HashMap<>();
     response.put("errors", errorDetails);
@@ -76,19 +79,24 @@ public class GlobalExceptionHandler {
 
     Map<String, FieldErrorDetail> errors = new HashMap<>();
 
-    ex.getConstraintViolations().forEach((violation) -> {
-      String fieldName = violation.getPropertyPath().toString();
-      if (fieldName.contains(".")) {
-        fieldName = fieldName.substring(fieldName.lastIndexOf('.') + 1);
-      }
-      String errorMessage = violation.getMessage();
-      String errorCode = violation.getConstraintDescriptor().getAnnotation().annotationType()
-          .getSimpleName();
+    ex.getConstraintViolations()
+      .forEach((violation) -> {
+        String fieldName = violation.getPropertyPath()
+                                    .toString();
+        if (fieldName.contains(".")) {
+          fieldName = fieldName.substring(fieldName.lastIndexOf('.') + 1);
+        }
+        String errorMessage = violation.getMessage();
+        String errorCode = violation.getConstraintDescriptor()
+                                    .getAnnotation()
+                                    .annotationType()
+                                    .getSimpleName();
 
-      errors.put(fieldName, new FieldErrorDetail(errorMessage, errorCode));
-    });
+        errors.put(fieldName, new FieldErrorDetail(errorMessage, errorCode));
+      });
 
-    return ResponseEntity.badRequest().body(errors);
+    return ResponseEntity.badRequest()
+                         .body(errors);
   }
 
   @ExceptionHandler(UserNotFoundException.class)

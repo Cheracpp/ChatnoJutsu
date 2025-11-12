@@ -42,13 +42,17 @@ public class UserServiceImpl implements UserService {
   @Override
   public List<UserDTO> getAllUsers() {
     List<User> users = userRepository.findAll();
-    return users.stream().map(userMapper::toUserDTO).collect(Collectors.toList());
+    return users.stream()
+                .map(userMapper::toUserDTO)
+                .collect(Collectors.toList());
   }
 
   @Override
   public List<UserDTO> getUsersByQuery(String query) {
     List<User> listOfUsers = userRepository.findUsersByUsernameContaining(query);
-    return listOfUsers.stream().map(userMapper::toUserDTO).collect(Collectors.toList());
+    return listOfUsers.stream()
+                      .map(userMapper::toUserDTO)
+                      .collect(Collectors.toList());
   }
 
   @Override
@@ -57,10 +61,13 @@ public class UserServiceImpl implements UserService {
       return Collections.emptyMap();
     }
 
-    List<Long> numericIds = ids.stream().map(Long::parseLong).collect(Collectors.toList());
+    List<Long> numericIds = ids.stream()
+                               .map(Long::parseLong)
+                               .collect(Collectors.toList());
 
     List<User> foundUsers = userRepository.findByIdIn(numericIds);
-    return foundUsers.stream().map(userMapper::toUserDTO)
-        .collect(Collectors.toMap(UserDTO::id, Function.identity()));
+    return foundUsers.stream()
+                     .map(userMapper::toUserDTO)
+                     .collect(Collectors.toMap(UserDTO::id, Function.identity()));
   }
 }

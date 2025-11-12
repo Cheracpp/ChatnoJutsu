@@ -40,7 +40,9 @@ public class RoomServiceImpl implements RoomService {
   @Override
   public List<RoomDTO> getRoomsByUserId(String userId) {
     List<Room> rooms = roomRepository.findByParticipantIdOrderedByLastMessage(userId);
-    return rooms.stream().map(roomMapper::toRoomDTO).collect(Collectors.toList());
+    return rooms.stream()
+                .map(roomMapper::toRoomDTO)
+                .collect(Collectors.toList());
   }
 
   @Override

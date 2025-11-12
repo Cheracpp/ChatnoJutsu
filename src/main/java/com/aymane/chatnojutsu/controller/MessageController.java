@@ -42,7 +42,8 @@ public class MessageController {
     String userId = userDetails.getUsername();
 
     if (!roomService.isUserParticipant(roomId, userId)) {
-      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                           .build();
     }
 
     return ResponseEntity.ok(messageService.getMessagesByRoomId(roomId));
