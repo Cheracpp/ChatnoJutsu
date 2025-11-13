@@ -6,7 +6,6 @@ import com.aymane.chatnojutsu.service.CsrfService;
 import com.aymane.chatnojutsu.service.JwtService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -26,12 +25,6 @@ public class AuthenticationController {
   private final AuthenticationManager authenticationManager;
   private final JwtService jwtService;
   private final CsrfService csrfService;
-
-  // 30 minutes
-  @Value("${jwt.cookie.expiry-seconds:1800}")
-  private int cookieExpiry;
-  @Value("${jwt.cookie.expired-seconds:0}")
-  private int cookieExpired;
 
   @Autowired
   public AuthenticationController(AuthenticationManager authenticationManager,
@@ -54,13 +47,7 @@ public class AuthenticationController {
     CustomUserDetails userDetails = (CustomUserDetails) principal;
 
     String jwt = this.jwtService.createToken(userDetails.getUsername());
-    ResponseCookie jwtCookie = ResponseCookie.from("accessToken", jwt)
-                                             .httpOnly(true)
-                                             .secure(true)
-                                             .sameSite("Lax")
-                                             .path("/")
-                                             .maxAge(cookieExpiry)
-                                             .build();
+    ResponseCookie jwtCookie = jwtService.createJwtCookie(jwt);
 
     String csrfToken = this.csrfService.generateCsrfToken();
     ResponseCookie csrfCookie = csrfService.createCsrfCookie(csrfToken);
@@ -75,13 +62,7 @@ public class AuthenticationController {
   @PostMapping("/logout")
   public ResponseEntity<?> unauthenticateUser() {
     // Create expired JWT cookie
-    ResponseCookie jwtCookie = ResponseCookie.from("accessToken", "")
-                                             .httpOnly(true)
-                                             .secure(true)
-                                             .sameSite("Lax")
-                                             .path("/")
-                                             .maxAge(cookieExpired)
-                                             .build();
+    ResponseCookie jwtCookie = jwtService.createExpiredJwtCookie();
 
     // Create expired CSRF cookie
     ResponseCookie csrfCookie = csrfService.createExpiredCsrfCookie();

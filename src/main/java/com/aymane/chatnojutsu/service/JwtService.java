@@ -11,6 +11,7 @@ import java.util.Date;
 import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -82,5 +83,25 @@ public class JwtService {
                .parseSignedClaims(token)
                .getPayload()
                .getSubject();
+  }
+
+  public ResponseCookie createJwtCookie(String token) {
+    return ResponseCookie.from("accessToken", token)
+                         .httpOnly(true)
+                         .secure(true)
+                         .sameSite("Lax")
+                         .path("/")
+                         .maxAge(cookieExpiry)
+                         .build();
+  }
+
+  public ResponseCookie createExpiredJwtCookie() {
+    return ResponseCookie.from("accessToken", "")
+                         .httpOnly(true)
+                         .secure(true)
+                         .sameSite("Lax")
+                         .path("/")
+                         .maxAge(0)
+                         .build();
   }
 }
