@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.aymane.chatnojutsu.config.ControllersSecurityConfig;
 import com.aymane.chatnojutsu.config.CustomUserDetails;
 import com.aymane.chatnojutsu.dto.RegisterRequest;
 import com.aymane.chatnojutsu.dto.UserDTO;
@@ -24,13 +25,15 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(value = UserController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
+@WebMvcTest(value = UserController.class)
+@Import(ControllersSecurityConfig.class)
 public class UserControllerTest {
 
   @Autowired
@@ -87,6 +90,7 @@ public class UserControllerTest {
   }
 
   @Test
+  @WithMockUser(roles = "ADMIN")
   public void getAllUsers_ReturnsListOfUsers() throws Exception {
     UserDTO user1 = new UserDTO("1", "user1", "user1@example.com");
     UserDTO user2 = new UserDTO("2", "user2", "user2@example.com");
@@ -109,6 +113,7 @@ public class UserControllerTest {
   }
 
   @Test
+  @WithMockUser(roles = {"ADMIN"})
   public void getAllUsers_WhenNoUsers_ReturnsEmptyList() throws Exception {
     given(userService.getAllUsers()).willReturn(Collections.emptyList());
 
@@ -121,6 +126,7 @@ public class UserControllerTest {
   }
 
   @Test
+  @WithMockUser
   public void getUsers_WithValidQuery_ReturnsMatchingUsers() throws Exception {
     String query = "test";
     List<UserDTO> matchingUsers = List.of(testUserDTO);
@@ -138,24 +144,28 @@ public class UserControllerTest {
   }
 
   @Test
+  @WithMockUser
   public void getUsers_WithShortQuery_ReturnsBadRequest() throws Exception {
     mockMvc.perform(get("/api/users/search").param("query", "ab"))
            .andExpect(status().isBadRequest());
   }
 
   @Test
+  @WithMockUser
   public void getUsers_WithBlankQuery_ReturnsBadRequest() throws Exception {
     mockMvc.perform(get("/api/users/search").param("query", "   "))
            .andExpect(status().isBadRequest());
   }
 
   @Test
+  @WithMockUser
   public void getUsers_WithMissingQuery_ReturnsBadRequest() throws Exception {
     mockMvc.perform(get("/api/users/search"))
            .andExpect(status().isBadRequest());
   }
 
   @Test
+  @WithMockUser
   public void getUsersDetails_WithValidUserIds_ReturnsUserMap() throws Exception {
     List<String> userIds = List.of("1", "2", "3");
     UserDTO user1 = new UserDTO("1", "user1", "user1@example.com");
@@ -177,6 +187,7 @@ public class UserControllerTest {
   }
 
   @Test
+  @WithMockUser
   public void getUsersDetails_WithEmptyList_ReturnsEmptyMap() throws Exception {
     List<String> emptyList = Collections.emptyList();
     Map<String, UserDTO> emptyMap = Collections.emptyMap();

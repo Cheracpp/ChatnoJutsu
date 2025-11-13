@@ -7,13 +7,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.aymane.chatnojutsu.config.ControllersSecurityConfig;
 import com.aymane.chatnojutsu.dto.RoomDTO;
 import com.aymane.chatnojutsu.service.RoomService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +23,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -29,6 +31,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(value = RoomController.class)
+@Import(ControllersSecurityConfig.class)
 public class RoomControllerTest {
 
   @Autowired
@@ -52,8 +55,7 @@ public class RoomControllerTest {
     given(roomService.findOrCreateRoom(roomDTO)).willReturn(result);
 
     mockMvc.perform(post("/api/rooms").contentType(MediaType.APPLICATION_JSON)
-                                      .content(objectMapper.writeValueAsString(roomDTO))
-                                      .with(csrf()))
+                                      .content(objectMapper.writeValueAsString(roomDTO)))
            .andExpect(status().isOk())
            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
            .andExpect(jsonPath("$.roomId", is("123456789")))
@@ -71,8 +73,7 @@ public class RoomControllerTest {
     RoomDTO roomDTO = new RoomDTO(null, Collections.emptyList(), "direct", null);
 
     mockMvc.perform(post("/api/rooms").contentType(MediaType.APPLICATION_JSON)
-                                      .content(objectMapper.writeValueAsString(roomDTO))
-                                      .with(csrf()))
+                                      .content(objectMapper.writeValueAsString(roomDTO)))
            .andExpect(status().isBadRequest());
   }
 
@@ -82,8 +83,7 @@ public class RoomControllerTest {
     RoomDTO roomDTO = new RoomDTO(null, List.of("participant1", "participant2"), "", null);
 
     mockMvc.perform(post("/api/rooms").contentType(MediaType.APPLICATION_JSON)
-                                      .content(objectMapper.writeValueAsString(roomDTO))
-                                      .with(csrf()))
+                                      .content(objectMapper.writeValueAsString(roomDTO)))
            .andExpect(status().isBadRequest());
     verifyNoInteractions(roomService);
   }
@@ -128,9 +128,9 @@ public class RoomControllerTest {
     RoomDTO roomDTO = new RoomDTO(null, List.of("participant1", "participant2"), "direct", null);
 
     mockMvc.perform(post("/api/rooms").contentType(MediaType.APPLICATION_JSON)
-                                      .content(objectMapper.writeValueAsString(roomDTO))
-                                      .with(csrf()))
-           .andExpect(status().isUnauthorized());
+                                      .content(objectMapper.writeValueAsString(roomDTO)))
+           .andExpect(status().is3xxRedirection())
+           .andExpect(redirectedUrl("http://localhost/login"));
 
     verifyNoInteractions(roomService);
   }
@@ -138,7 +138,8 @@ public class RoomControllerTest {
   @Test
   public void getRooms_WithoutAuthentication_ReturnsUnauthorized() throws Exception {
     mockMvc.perform(get("/api/rooms"))
-           .andExpect(status().isUnauthorized());
+           .andExpect(status().is3xxRedirection())
+           .andExpect(redirectedUrl("http://localhost/login"));
 
     verifyNoInteractions(roomService);
   }
@@ -166,8 +167,7 @@ public class RoomControllerTest {
     given(roomService.findOrCreateRoom(roomDTO)).willReturn(result);
 
     mockMvc.perform(post("/api/rooms").contentType(MediaType.APPLICATION_JSON)
-                                      .content(objectMapper.writeValueAsString(roomDTO))
-                                      .with(csrf()))
+                                      .content(objectMapper.writeValueAsString(roomDTO)))
            .andExpect(status().isOk())
            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
            .andExpect(jsonPath("$.roomId", is("789")))
@@ -186,8 +186,7 @@ public class RoomControllerTest {
     RoomDTO roomDTO = new RoomDTO(null, List.of("participant1"), "direct", null);
 
     mockMvc.perform(post("/api/rooms").contentType(MediaType.APPLICATION_JSON)
-                                      .content(objectMapper.writeValueAsString(roomDTO))
-                                      .with(csrf()))
+                                      .content(objectMapper.writeValueAsString(roomDTO)))
            .andExpect(status().isBadRequest());
 
     verifyNoInteractions(roomService);
@@ -199,8 +198,7 @@ public class RoomControllerTest {
     String requestBody = "{\"roomId\":null,\"participants\":null,\"type\":\"direct\",\"name\":null}";
 
     mockMvc.perform(post("/api/rooms").contentType(MediaType.APPLICATION_JSON)
-                                      .content(requestBody)
-                                      .with(csrf()))
+                                      .content(requestBody))
            .andExpect(status().isBadRequest());
 
     verifyNoInteractions(roomService);
@@ -212,8 +210,7 @@ public class RoomControllerTest {
     String requestBody = "{\"roomId\":null,\"participants\":[\"user1\",\"user2\"],\"type\":null,\"name\":null}";
 
     mockMvc.perform(post("/api/rooms").contentType(MediaType.APPLICATION_JSON)
-                                      .content(requestBody)
-                                      .with(csrf()))
+                                      .content(requestBody))
            .andExpect(status().isBadRequest());
 
     verifyNoInteractions(roomService);
@@ -225,21 +222,8 @@ public class RoomControllerTest {
     RoomDTO roomDTO = new RoomDTO(null, List.of("participant1", "participant2"), "invalid", null);
 
     mockMvc.perform(post("/api/rooms").contentType(MediaType.APPLICATION_JSON)
-                                      .content(objectMapper.writeValueAsString(roomDTO))
-                                      .with(csrf()))
-           .andExpect(status().isBadRequest());
-
-    verifyNoInteractions(roomService);
-  }
-
-  @Test
-  @WithMockUser(username = "testUser")
-  public void findOrCreateRoom_WithoutCsrfToken_ReturnsForbidden() throws Exception {
-    RoomDTO roomDTO = new RoomDTO(null, List.of("participant1", "participant2"), "direct", null);
-
-    mockMvc.perform(post("/api/rooms").contentType(MediaType.APPLICATION_JSON)
                                       .content(objectMapper.writeValueAsString(roomDTO)))
-           .andExpect(status().isForbidden());
+           .andExpect(status().isBadRequest());
 
     verifyNoInteractions(roomService);
   }

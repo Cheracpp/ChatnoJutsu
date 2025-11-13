@@ -10,8 +10,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.aymane.chatnojutsu.config.ControllersSecurityConfig;
 import com.aymane.chatnojutsu.dto.MessageDTO;
 import com.aymane.chatnojutsu.model.Message;
 import com.aymane.chatnojutsu.service.MessageService;
@@ -24,12 +26,14 @@ import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(MessageController.class)
+@Import(ControllersSecurityConfig.class)
 public class MessageControllerTest {
 
   @Autowired
@@ -106,7 +110,8 @@ public class MessageControllerTest {
     ObjectId roomId = new ObjectId();
 
     mockMvc.perform(get("/api/rooms/{roomId}/messages", roomId.toHexString()))
-           .andExpect(status().isUnauthorized());
+           .andExpect(status().is3xxRedirection())
+           .andExpect(redirectedUrl("http://localhost/login"));
 
     verifyNoInteractions(roomService);
     verifyNoInteractions(messageService);
