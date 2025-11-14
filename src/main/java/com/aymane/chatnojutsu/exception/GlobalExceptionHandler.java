@@ -1,6 +1,7 @@
 package com.aymane.chatnojutsu.exception;
 
 import com.aymane.chatnojutsu.dto.ErrorResponse;
+import com.aymane.chatnojutsu.exception.security.CsrfTokenException;
 import com.aymane.chatnojutsu.exception.user.FriendServiceException;
 import com.aymane.chatnojutsu.exception.user.UserNotFoundException;
 import com.aymane.chatnojutsu.util.FieldErrorDetail;
@@ -111,5 +112,12 @@ public class GlobalExceptionHandler {
     ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Invalid Request",
         ex.getMessage());
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(CsrfTokenException.class)
+  public ResponseEntity<ErrorResponse> handleCsrfTokenException(CsrfTokenException ex) {
+    ErrorResponse error = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+        "Server Error", ex.getMessage());
+    return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }

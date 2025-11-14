@@ -1,5 +1,6 @@
 package com.aymane.chatnojutsu.service;
 
+import com.aymane.chatnojutsu.exception.security.CsrfTokenException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -29,6 +30,9 @@ public class CsrfService {
    * Create a CSRF token cookie (readable by JavaScript for header inclusion)
    */
   public ResponseCookie createCsrfCookie(String token) {
+    if (token == null || token.isBlank()) {
+      throw new CsrfTokenException("Token cannot be null or blank");
+    }
     return ResponseCookie.from(CSRF_TOKEN_COOKIE_NAME, token)
                          .httpOnly(false)
                          .secure(true)
