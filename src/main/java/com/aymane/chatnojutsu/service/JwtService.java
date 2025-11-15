@@ -4,9 +4,11 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
@@ -18,12 +20,17 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class JwtService {
 
-  SecretKey key = Jwts.SIG.HS512.key()
-                                .build();
+  private final SecretKey key;
 
   // 30 minutes
-  @Value("${jwt.cookie.expiry-seconds:1800}")
-  private int cookieExpiry;
+  private final int cookieExpiry;
+
+  public JwtService(@Value("${jwt.secret}") String secret,
+      @Value("${jwt.cookie.expiry-seconds:1800}") int cookieExpiry) {
+    this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    this.cookieExpiry = cookieExpiry;
+  }
+
 
   public String createToken(String userId) {
     Date now = new Date();
