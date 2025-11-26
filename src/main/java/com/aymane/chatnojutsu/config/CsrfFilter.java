@@ -21,7 +21,7 @@ public class CsrfFilter extends OncePerRequestFilter {
   private static final Set<String> PROTECTED_METHODS = Set.of("POST", "PUT", "DELETE", "PATCH");
 
   // Endpoints that don't require CSRF protection
-  private static final Set<String> EXEMPT_PATHS = Set.of("/auth/login", "/users"
+  private static final Set<String> EXEMPT_PATHS = Set.of("/auth/login", "/api/users"
       // registration endpoint
   );
 
