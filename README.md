@@ -1,6 +1,6 @@
-# ChatNoJutsu
+# Link
 
-ChatNoJutsu is a personal learning project for exploring Spring Boot, WebSocket communication, and
+Link is a personal learning project for exploring Spring Boot, WebSocket communication, and
 full-stack web development.
 
 ## Features
@@ -47,8 +47,8 @@ full-stack web development.
 Clone the repository and prepare the configuration:
 
 ```bash
-git clone https://github.com/Cheracpp/ChatnoJutsu.git
-cd ChatNoJutsu
+git clone https://github.com/Cheracpp/Link.git
+cd Link
 ```
 
 ### 2. Prepare Security Keys
@@ -94,7 +94,7 @@ Once the containers are running, you must initialize the replica set configurati
 
 1. Enter the primary MongoDB container:
    ```bash
-   docker exec -it chatnojutsu-mongo-primary mongosh "mongodb://admin:mongo123@localhost:27017/"
+   docker exec -it link-mongo-primary mongosh "mongodb://admin:mongo123@localhost:27017/"
    ```
    *(Note: Replace `mongo123` with the `MONGO_PASSWORD` from your .env file)*
 

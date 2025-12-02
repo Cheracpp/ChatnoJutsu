@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: chatnojutsu-postgres
+    container_name: link-postgres
     environment:
       POSTGRES_DB: userDB
       POSTGRES_USER: postgres
@@ -11,7 +11,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - chatnojutsu-network
+      - link-network
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
@@ -20,7 +20,7 @@ services:
 
   mongo0:
     image: mongo:8.2
-    container_name: chatnojutsu-mongo-primary
+    container_name: link-mongo-primary
     hostname: mongo0
     command: [ "--config", "/etc/mongod.conf" ]
     environment:
@@ -34,7 +34,7 @@ services:
       - ./mongod.conf:/etc/mongod.conf
       - ./secrets-mongo/keyfile:/etc/mongodb/keyfile
     networks:
-      - chatnojutsu-network
+      - link-network
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
       interval: 10s
@@ -43,7 +43,7 @@ services:
 
   mongo1:
     image: mongo:8.2
-    container_name: chatnojutsu-mongo-secondary-1
+    container_name: link-mongo-secondary-1
     hostname: mongo1
     command: [ "--config", "/etc/mongod.conf" ]
     environment:
@@ -57,7 +57,7 @@ services:
       - ./mongod.conf:/etc/mongod.conf
       - ./secrets-mongo/keyfile:/etc/mongodb/keyfile
     networks:
-      - chatnojutsu-network
+      - link-network
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
       interval: 10s
@@ -66,7 +66,7 @@ services:
 
   mongo2:
     image: mongo:8.2
-    container_name: chatnojutsu-mongo-secondary-2
+    container_name: link-mongo-secondary-2
     hostname: mongo2
     command: [ "--config", "/etc/mongod.conf" ]
     environment:
@@ -80,7 +80,7 @@ services:
       - ./mongod.conf:/etc/mongod.conf
       - ./secrets-mongo/keyfile:/etc/mongodb/keyfile
     networks:
-      - chatnojutsu-network
+      - link-network
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
       interval: 10s
@@ -89,7 +89,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3.11-management
-    container_name: chatnojutsu-rabbitmq
+    container_name: link-rabbitmq
     hostname: rabbitmq
     ports:
       - "5672:5672"
@@ -101,7 +101,7 @@ services:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-user}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-password}
     networks:
-      - chatnojutsu-network
+      - link-network
     healthcheck:
       test: [ "CMD", "rabbitmq-diagnostics", "check_local_alarms" ]
       interval: 30s
@@ -112,7 +112,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: chatnojutsu-app
+    container_name: link-app
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       JWT_SECRET: ${JWT_SECRET}
@@ -151,7 +151,7 @@ services:
       rabbitmq:
         condition: service_healthy
     networks:
-      - chatnojutsu-network
+      - link-network
     restart: unless-stopped
 
 volumes:
@@ -161,6 +161,6 @@ volumes:
   mongo2_data:
 
 networks:
-  chatnojutsu-network:
+  link-network:
     driver: bridge
 

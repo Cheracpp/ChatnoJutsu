@@ -1,57 +1,57 @@
-
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/main.css">
-    <title>Chat Application</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/main.css">
+  <title>Chat Application</title>
 </head>
 <body>
 
-<h2>ChatnoJutsu</h2>
+<h2>Link</h2>
 
 
 <div class="chat-container" id="chat-page">
-    <div class="rooms-list">
-        <div class="rooms-list-container">
-            <h2>Chats</h2>
-            <ul id="connectedUsers">
-            </ul>
-        </div>
-        <div>
-            <a class="people" href="javascript:void(0)" id="people">People</a>
-            <p id="connected-user-fullname"></p>
-            <a class="logout" href="javascript:void(0)" id="logout">Logout</a>
-        </div>
+  <div class="rooms-list">
+    <div class="rooms-list-container">
+      <h2>Chats</h2>
+      <ul id="connectedUsers">
+      </ul>
     </div>
+    <div>
+      <a class="people" href="javascript:void(0)" id="people">People</a>
+      <p id="connected-user-fullname"></p>
+      <a class="logout" href="javascript:void(0)" id="logout">Logout</a>
+    </div>
+  </div>
 
-    <div class="chat-area">
-        <div class="chat-area" id="chat-messages">
-        </div>
-        <form id="messageForm" name="messageForm" class="hidden">
-            <div class="message-input">
-                <input autocomplete="off" type="text" id="message" placeholder="Type your message...">
-                <button>Send</button>
-            </div>
-        </form>
+  <div class="chat-area">
+    <div class="chat-area" id="chat-messages">
     </div>
-    <div class="search-area hidden">
-        <form id="searchForm" name="searchForm" class="" onSubmit="return false;">
-            <div class="search-input">
-                <input autocomplete="off" type="text" id="search" placeholder="Type a name or group..." onkeyup="getUsers()">
-            </div>
-        </form>
-        <div class="search-area" id="search-results">
-            <ol id="results" ></ol>
+    <form id="messageForm" name="messageForm" class="hidden">
+      <div class="message-input">
+        <input autocomplete="off" type="text" id="message" placeholder="Type your message...">
+        <button>Send</button>
+      </div>
+    </form>
+  </div>
+  <div class="search-area hidden">
+    <form id="searchForm" name="searchForm" class="" onSubmit="return false;">
+      <div class="search-input">
+        <input autocomplete="off" type="text" id="search" placeholder="Type a name or group..."
+               onkeyup="getUsers()">
+      </div>
+    </form>
+    <div class="search-area" id="search-results">
+      <ol id="results"></ol>
 
-        </div>
     </div>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 <script th:inline="javascript">
-    const loggedInUser = /*[[${loggedInUser}]]*/ null;
+  const loggedInUser = /*[[${loggedInUser}]]*/ null;
 </script>
 <script src="/javascript/main.js"></script>
 </body>

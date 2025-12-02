@@ -2,7 +2,7 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <artifactId>ChatnoJutsu</artifactId>
+  <artifactId>Link</artifactId>
   <build>
     <plugins>
       <plugin>
@@ -139,10 +139,10 @@
       <artifactId>reactor-netty</artifactId>
     </dependency>
   </dependencies>
-  <description>ChatnoJutsu</description>
+  <description>Link</description>
   <groupId>com.aymane</groupId>
   <modelVersion>4.0.0</modelVersion>
-  <name>ChatnoJutsu</name>
+  <name>Link</name>
   <parent>
     <artifactId>spring-boot-starter-parent</artifactId>
     <groupId>org.springframework.boot</groupId>
