@@ -18,9 +18,11 @@ services:
       timeout: 5s
       retries: 5
 
-  mongodb:
-    image: mongo:7-jammy
-    container_name: chatnojutsu-mongodb
+  mongo0:
+    image: mongo:8.2
+    container_name: chatnojutsu-mongo-primary
+    hostname: mongo0
+    command: [ "--config", "/etc/mongod.conf" ]
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-admin}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-mongo123}
@@ -28,7 +30,55 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongodb_data:/data/db
+      - mongo0_data:/data/db
+      - ./mongod.conf:/etc/mongod.conf
+      - ./secrets-mongo/keyfile:/etc/mongodb/keyfile
+    networks:
+      - chatnojutsu-network
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongo1:
+    image: mongo:8.2
+    container_name: chatnojutsu-mongo-secondary-1
+    hostname: mongo1
+    command: [ "--config", "/etc/mongod.conf" ]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-mongo123}
+      MONGO_INITDB_DATABASE: messageDB
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo1_data:/data/db
+      - ./mongod.conf:/etc/mongod.conf
+      - ./secrets-mongo/keyfile:/etc/mongodb/keyfile
+    networks:
+      - chatnojutsu-network
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongo2:
+    image: mongo:8.2
+    container_name: chatnojutsu-mongo-secondary-2
+    hostname: mongo2
+    command: [ "--config", "/etc/mongod.conf" ]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-mongo123}
+      MONGO_INITDB_DATABASE: messageDB
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo2_data:/data/db
+      - ./mongod.conf:/etc/mongod.conf
+      - ./secrets-mongo/keyfile:/etc/mongodb/keyfile
     networks:
       - chatnojutsu-network
     healthcheck:
@@ -39,8 +89,8 @@ services:
 
   rabbitmq:
     image: rabbitmq:3.11-management
-    container_name: my-chat-rabbitmq
-    hostname: my-rabbit
+    container_name: chatnojutsu-rabbitmq
+    hostname: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -50,6 +100,8 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-user}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-password}
+    networks:
+      - chatnojutsu-network
     healthcheck:
       test: [ "CMD", "rabbitmq-diagnostics", "check_local_alarms" ]
       interval: 30s
@@ -67,20 +119,21 @@ services:
       DATABASE_URL: jdbc:postgresql://postgres:5432/userDB
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: ${DB_PASSWORD:-postgres123}
-      MONGODB_HOST: mongodb
+      MONGODB_HOST1: mongo0
+      MONGODB_HOST2: mongo1
+      MONGODB_HOST3: mongo2
       MONGODB_PORT: 27017
       MONGODB_DATABASE: messageDB
       MONGODB_USERNAME: ${MONGO_USER:-admin}
       MONGODB_PASSWORD: ${MONGO_PASSWORD:-mongo123}
-      MONGODB_AUTH_DB: admin
       DB_POOL_SIZE: 20
       DB_POOL_MIN_IDLE: 5
       DB_CONN_TIMEOUT: 30000
-      RABBITMQ_HOST: localhost
+      RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: ${RABBITMQ_USER:-user}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-password}
-      RELAY_HOST: localhost
+      RELAY_HOST: rabbitmq
       RELAY_PORT: 61613
       RELAY_USER: ${RELAY_USER:-user}
       RELAY_PASSWORD: ${RELAY_PASSWORD:-password}
@@ -89,7 +142,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      mongodb:
+      mongo0:
+        condition: service_healthy
+      mongo1:
+        condition: service_healthy
+      mongo2:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
@@ -99,7 +156,9 @@ services:
 
 volumes:
   postgres_data:
-  mongodb_data:
+  mongo0_data:
+  mongo1_data:
+  mongo2_data:
 
 networks:
   chatnojutsu-network:

@@ -10,15 +10,12 @@ full-stack web development.
 - **User Management**
     - User registration with unique username and email
     - Retrieve list of users
-    - Friend management (add/remove friends)
-
 - **Authentication**
     - JWT-based user authentication
-    - csrf protection using the double submit cookie pattern
+    - CSRF protection using the double submit cookie pattern
     - Secure login and logout mechanisms
-
 - **Messaging**
-    - Real-time WebSocket communication
+    - Real-time WebSocket communication (STOMP protocol)
     - Message sending and receiving
     - Message history retrieval
 
@@ -26,11 +23,10 @@ full-stack web development.
 
 - **Backend**: Spring Boot
 - **Database**:
-    - PostgreSQL (user information)
-    - MongoDB (messages and rooms)
-- **Authentication**: JWT
-- **Real-time Communication**: WebSocket
-- **Containerization**: Docker
+    - PostgreSQL (User information)
+    - MongoDB (Messages and rooms - configured as a Replica Set)
+- **Message Broker**: RabbitMQ (with STOMP plugin)
+- **Containerization**: Docker & Docker Compose
 
 ### Upcoming Features
 
@@ -42,116 +38,98 @@ full-stack web development.
 
 ### Prerequisites
 
-- Java JDK 17
-- Maven
-- Docker & Docker Compose (recommended)
-- IDE with Spring Boot support (optional)
+- Docker & Docker Compose
 
-### Option 1: Run with Docker (Recommended)
+## Installation & Running
 
-The easiest way to run the application with all dependencies:
+### 1. Setup Environment
 
-```bash
-docker-compose up -d
-```
-
-Access the application at `http://localhost:8080`
-
-### Option 2: Local Development with Spring Boot
-
-For active development with auto-managed Docker databases:
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Cheracpp/ChatNoJutsu.git
-   cd ChatNoJutsu
-   ```
-
-2. Run the application (databases start automatically):
-   ```bash
-   mvn spring-boot:run
-   ```
-
-The `dev` profile is active by default and will automatically start PostgreSQL and MongoDB
-containers.
-
-### Option 3: Manual Setup
-
-If you prefer managing databases yourself:
-
-1. Install and start PostgreSQL and MongoDB manually
-
-2. Update `src/main/resources/application-dev.properties`:
-   ```properties
-   spring.docker.compose.enabled=false
-   ```
-
-3. Configure your database connections
-
-4. Run:
-   ```bash
-   mvn spring-boot:run
-   ```
-
-## Docker Commands
-
-### Development
+Clone the repository and prepare the configuration:
 
 ```bash
-# Start all services
-docker-compose up -d
-
-# View application logs
-docker-compose logs -f app
-
-# Stop all services
-docker-compose down
-
-# Stop and remove all data
-docker-compose down -v
+git clone https://github.com/Cheracpp/ChatnoJutsu.git
+cd ChatNoJutsu
 ```
 
-### Production Deployment
+### 2. Prepare Security Keys
 
-1. Create `.env` file from template:
-   ```bash
-   cp .env.example .env
-   ```
-
-2. Update environment variables in `.env`:
-   ```properties
-   DB_PASSWORD=your_secure_password
-   MONGO_USER=admin
-   MONGO_PASSWORD=your_secure_password
-   SPRING_PROFILES_ACTIVE=prod
-   ```
-
-3. Deploy:
-   ```bash
-   docker-compose up -d --build
-   ```
-
-## Configuration Profiles
-
-The application supports multiple profiles:
-
-- **dev** (default): Local development with verbose logging and auto schema updates
-- **prod**: Production settings with environment-based configuration and optimized performance
-
-Switch profiles:
+**Generate MongoDB Keyfile:**
+Since MongoDB runs as a replica set, it requires a shared keyfile for internal authentication. Run
+this command to generate it with the correct permissions:
 
 ```bash
-# Via command line
-mvn spring-boot:run -Dspring-boot.run.profiles=prod
-
-# Via environment variable
-export SPRING_PROFILES_ACTIVE=prod
+docker run --rm -v "$PWD/secrets-mongo":/app -w /app alpine sh -c "apk add openssl && openssl rand -base64 756 > keyfile && chmod 400 keyfile && chown 999:999 keyfile"
 ```
 
-## Running Tests
-
-Execute tests with:
+Generate a secure 64-byte Base64 encoded secret for the JWT:
 
 ```bash
-mvn test
+openssl rand -base64 64
 ```
+
+### 3. Update environment variables:
+
+Create `.env` file in the project root if you haven't already, and Update it:
+
+```properties
+JWT_SECRET=<paste-output-from-openssl-here>
+DB_PASSWORD=your_secure_password
+MONGO_USER=admin
+MONGO_PASSWORD=your_secure_password
+SPRING_PROFILES_ACTIVE=prod
+RABBITMQ_USER=user
+RABBITMQ_PASSWORD=your_secure_password
+```
+
+### 4. Initialize Infrastructure
+
+Start the databases and message broker first to initialize the MongoDB Replica Set.
+
+```bash
+docker-compose up -d mongo0 mongo1 mongo2 postgres rabbitmq
+```
+
+**Initialize MongoDB Replica Set:**
+Once the containers are running, you must initialize the replica set configuration manually once.
+
+1. Enter the primary MongoDB container:
+   ```bash
+   docker exec -it chatnojutsu-mongo-primary mongosh "mongodb://admin:mongo123@localhost:27017/"
+   ```
+   *(Note: Replace `mongo123` with the `MONGO_PASSWORD` from your .env file)*
+
+2. Inside the MongoDB shell, run the following commands:
+   ```javascript
+   use admin
+   ```
+   ```javascript
+   rs.initiate({
+      _id: "rs0",
+      members: [
+         { _id: 0, host: "mongo0:27017" },
+         { _id: 1, host: "mongo1:27017" },
+         { _id: 2, host: "mongo2:27017" }
+      ]
+   })
+   ```
+   *If successful, the prompt should change to `rs0 [direct: primary] >` or similar.*
+
+3. Exit the shell:
+   ```javascript
+   exit
+   ```
+
+### 5. Run the Application
+
+Now that the database cluster is active, start the main application:
+
+```bash
+docker-compose up -d app
+```
+
+## Usage & Access
+
+- **Application API**: `http://localhost:8080`
+- **RabbitMQ Management Console**: `http://localhost:15672`
+    - User: `user` (or value in .env)
+    - Password: `password` (or value in .env)

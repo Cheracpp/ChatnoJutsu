@@ -1,6 +1,8 @@
 services:
   postgres-dev:
     image: postgres:16-alpine
+    labels:
+      org.springframework.boot.ignore: true
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
@@ -10,15 +12,22 @@ services:
     volumes:
       - postgres-dev-data:/var/lib/postgresql/data
 
-  mongodb-dev:
-    image: mongo:7-jammy
+  mongo0-dev:
+    image: mongo:8.2
+    container_name: mongo-primary
+    hostname: mongo0-dev
+    command: [ "--config", "/etc/mongod.conf" ]
+    labels:
+      org.springframework.boot.ignore: true
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: mongo123
     ports:
       - "27017:27017"
     volumes:
-      - mongodb-dev-data:/data/db
+      - mongodb-primary-dev-data:/data/db
+      - ./mongod.conf:/etc/mongod.conf
+      - ./secrets-mongo/keyfile:/etc/mongodb/keyfile
 
   rabbitmq:
     image: rabbitmq:3.11-management
@@ -36,4 +45,4 @@ services:
 
 volumes:
   postgres-dev-data:
-  mongodb-dev-data:
+  mongodb-primary-dev-data:

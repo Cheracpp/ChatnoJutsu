@@ -1,0 +1,13 @@
+The keyfile contains the key used for internal authentication between members of a MongoDB replica set.
+you can generate a keyfile using the following command:
+
+  docker run --rm -v "$PWD/secrets-mongo":/app -w /app alpine sh -c "apk add openssl && openssl rand -base64 756 > keyfile && chmod 400 keyfile && chown 999:999 keyfile"
+
+This command does the following:
+1. Runs a temporary Alpine Linux container.
+2. Mounts the current directory's secrets-mongo folder to /app in the container.
+3. Installs OpenSSL in the container.
+4. Generates a random base64-encoded key of 756 bytes and saves it to a file named keyfile.
+5. Sets the file permissions to 400 (read-only for the owner).
+6. Changes the ownership of the file to user ID 999 and group ID 999, which is the default user for MongoDB containers.
+
